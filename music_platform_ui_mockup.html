@@ -1,0 +1,551 @@
+
+<style>
+  :root {
+    --g-green: #1a7a4a;
+    --g-green-light: #e6f5ee;
+    --g-green-mid: #2ea86a;
+    --g-gold: #c9900c;
+    --g-gold-light: #fdf3dc;
+    --g-gold-mid: #e8ab20;
+    --g-blue: #1a3f8f;
+    --g-blue-light: #e6ecfa;
+    --g-blue-mid: #2d5ac8;
+    --sidebar-w: 180px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+  .shell {
+    display: flex;
+    height: 580px;
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    background: var(--color-background-primary);
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--g-blue);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    flex-shrink: 0;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px 20px;
+    border-bottom: 0.5px solid rgba(255,255,255,0.15);
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--g-gold-mid);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 18px;
+  }
+  .logo-text {
+    font-size: 15px;
+    font-weight: 500;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+  .logo-text span { color: var(--g-gold-mid); }
+
+  .nav { padding: 16px 0; flex: 1; }
+  .nav-section-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0 16px;
+    margin-bottom: 6px;
+    margin-top: 12px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 16px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+  }
+  .nav-item.active {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    border-left: 3px solid var(--g-gold-mid);
+    padding-left: 13px;
+  }
+  .nav-item i { font-size: 16px; }
+  .nav-item .badge {
+    margin-left: auto;
+    background: var(--g-gold-mid);
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+  }
+  .sidebar-bottom {
+    padding: 12px 16px;
+    border-top: 0.5px solid rgba(255,255,255,0.15);
+  }
+  .user-row {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--g-green-mid);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500; color: #fff;
+  }
+  .user-name { font-size: 12px; color: rgba(255,255,255,0.8); }
+  .user-plan { font-size: 10px; color: var(--g-gold-mid); }
+
+  /* Main content */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--color-background-primary);
+  }
+
+  /* Top bar */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+  }
+  .search-bar {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--color-background-secondary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: 20px;
+    padding: 7px 14px;
+  }
+  .search-bar i { font-size: 14px; color: var(--color-text-secondary); }
+  .search-bar span { font-size: 13px; color: var(--color-text-secondary); }
+  .topbar-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 12px; font-weight: 500;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-upload {
+    background: var(--g-green);
+    color: #fff;
+  }
+  .btn-premium {
+    background: var(--g-gold-light);
+    color: var(--g-gold);
+    border: 0.5px solid var(--g-gold-mid);
+  }
+
+  /* Scroll area */
+  .content { flex: 1; overflow-y: auto; padding: 20px; }
+
+  /* Hero banner */
+  .hero {
+    background: var(--g-blue);
+    border-radius: var(--border-radius-lg);
+    padding: 22px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .hero-left h2 { color: #fff; font-size: 17px; font-weight: 500; }
+  .hero-left p { color: rgba(255,255,255,0.6); font-size: 12px; margin-top: 4px; }
+  .hero-tags { display: flex; gap: 6px; margin-top: 12px; }
+  .hero-tag {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .tag-green { background: var(--g-green); color: #fff; }
+  .tag-gold { background: var(--g-gold-mid); color: #fff; }
+  .tag-outline { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); }
+  .hero-play {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--g-gold-mid);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .hero-play i { font-size: 22px; color: #fff; }
+
+  /* Section */
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .section-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+  .see-all { font-size: 12px; color: var(--g-blue-mid); cursor: pointer; }
+
+  /* Track list */
+  .track-list { margin-bottom: 24px; }
+  .track-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+  }
+  .track-item:hover { background: var(--color-background-secondary); }
+  .track-item.playing { background: var(--g-green-light); }
+  .track-num { font-size: 12px; color: var(--color-text-secondary); width: 16px; text-align: center; }
+  .track-thumb {
+    width: 38px; height: 38px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .track-info { flex: 1; min-width: 0; }
+  .track-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .track-artist { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+  .track-genre {
+    font-size: 10px; padding: 2px 8px; border-radius: 10px;
+    font-weight: 500;
+  }
+  .genre-afrobeats { background: var(--g-green-light); color: var(--g-green); }
+  .genre-hiphop { background: var(--g-blue-light); color: var(--g-blue); }
+  .genre-gospel { background: var(--g-gold-light); color: var(--g-gold); }
+  .track-dur { font-size: 12px; color: var(--color-text-secondary); width: 32px; text-align: right; }
+  .track-actions { display: flex; gap: 4px; }
+  .track-actions i { font-size: 15px; color: var(--color-text-secondary); cursor: pointer; padding: 2px; }
+  .track-actions i:hover { color: var(--g-green); }
+  .playing-bar {
+    display: flex; align-items: center; gap: 4px;
+  }
+  .playing-bar span {
+    display: inline-block;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--g-green);
+  }
+
+  /* Artist cards */
+  .artist-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .artist-card {
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 14px 12px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .artist-card:hover { border-color: var(--g-green-mid); }
+  .artist-avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    margin: 0 auto 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 500; color: #fff;
+  }
+  .artist-name { font-size: 12px; font-weight: 500; color: var(--color-text-primary); }
+  .artist-followers { font-size: 10px; color: var(--color-text-secondary); margin-top: 2px; }
+  .verified { color: var(--g-blue-mid); font-size: 11px; }
+
+  /* Player bar */
+  .player {
+    border-top: 0.5px solid var(--color-border-tertiary);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--color-background-primary);
+  }
+  .player-thumb {
+    width: 42px; height: 42px;
+    border-radius: 6px;
+    background: var(--g-blue);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .player-info { min-width: 0; }
+  .player-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+  .player-artist { font-size: 11px; color: var(--color-text-secondary); }
+  .player-controls {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .ctrl-btns { display: flex; align-items: center; gap: 12px; }
+  .ctrl-btns i { font-size: 18px; color: var(--color-text-secondary); cursor: pointer; }
+  .ctrl-btns i:hover { color: var(--color-text-primary); }
+  .play-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--g-green);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .play-btn i { font-size: 16px; color: #fff; }
+  .progress-row { display: flex; align-items: center; gap: 8px; width: 100%; }
+  .prog-time { font-size: 11px; color: var(--color-text-secondary); }
+  .progress-track {
+    flex: 1;
+    height: 3px;
+    background: var(--color-border-tertiary);
+    border-radius: 2px;
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 38%;
+    background: var(--g-green);
+    border-radius: 2px;
+  }
+  .progress-dot {
+    position: absolute;
+    top: 50%; right: 62%;
+    transform: translate(50%, -50%);
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--g-green);
+  }
+  .player-right { display: flex; align-items: center; gap: 10px; }
+  .player-right i { font-size: 16px; color: var(--color-text-secondary); cursor: pointer; }
+  .vol-bar {
+    width: 70px; height: 3px;
+    background: var(--color-border-tertiary);
+    border-radius: 2px;
+    position: relative;
+  }
+  .vol-fill { width: 65%; height: 100%; background: var(--g-blue-mid); border-radius: 2px; }
+  .dl-btn {
+    display: flex; align-items: center; gap: 4px;
+    padding: 5px 10px;
+    border-radius: 12px;
+    background: var(--g-gold-light);
+    color: var(--g-gold);
+    font-size: 11px; font-weight: 500;
+    border: 0.5px solid var(--g-gold-mid);
+    cursor: pointer;
+  }
+  .dl-btn i { font-size: 13px; }
+</style>
+
+<h2 class="sr-only">Music streaming platform UI mockup — home page with sidebar, track list, artist cards, and player bar</h2>
+
+<div class="shell">
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-icon"><i class="ti ti-music" aria-hidden="true"></i></div>
+      <div class="logo-text">Groove<span>Hub</span></div>
+    </div>
+    <nav class="nav">
+      <div class="nav-section-label">Discover</div>
+      <div class="nav-item active"><i class="ti ti-home" aria-hidden="true"></i> Home</div>
+      <div class="nav-item"><i class="ti ti-trending-up" aria-hidden="true"></i> Trending <span class="badge">New</span></div>
+      <div class="nav-item"><i class="ti ti-compass" aria-hidden="true"></i> Explore</div>
+      <div class="nav-item"><i class="ti ti-radio" aria-hidden="true"></i> Radio</div>
+
+      <div class="nav-section-label">Library</div>
+      <div class="nav-item"><i class="ti ti-heart" aria-hidden="true"></i> Favorites</div>
+      <div class="nav-item"><i class="ti ti-playlist" aria-hidden="true"></i> Playlists</div>
+      <div class="nav-item"><i class="ti ti-download" aria-hidden="true"></i> Downloads</div>
+
+      <div class="nav-section-label">Artists</div>
+      <div class="nav-item"><i class="ti ti-users" aria-hidden="true"></i> Following</div>
+      <div class="nav-item"><i class="ti ti-upload" aria-hidden="true"></i> Upload Music</div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="user-row">
+        <div class="avatar">AK</div>
+        <div>
+          <div class="user-name">Adekola</div>
+          <div class="user-plan">⭐ Pro Member</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="search-bar">
+        <i class="ti ti-search" aria-hidden="true"></i>
+        <span>Search songs, artists, albums...</span>
+      </div>
+      <button class="topbar-btn btn-upload"><i class="ti ti-upload" style="font-size:13px" aria-hidden="true"></i> Upload</button>
+      <button class="topbar-btn btn-premium"><i class="ti ti-star" style="font-size:13px" aria-hidden="true"></i> Go Premium</button>
+    </div>
+
+    <div class="content">
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-left">
+          <h2>Good evening, Adekola 👋</h2>
+          <p>Your top picks for today</p>
+          <div class="hero-tags">
+            <span class="hero-tag tag-green">Afrobeats</span>
+            <span class="hero-tag tag-gold">Hip-Hop</span>
+            <span class="hero-tag tag-outline">Gospel</span>
+            <span class="hero-tag tag-outline">Highlife</span>
+          </div>
+        </div>
+        <div class="hero-play"><i class="ti ti-player-play" aria-hidden="true"></i></div>
+      </div>
+
+      <!-- Trending tracks -->
+      <div class="section-header">
+        <span class="section-title">🔥 Trending Now</span>
+        <span class="see-all">See all</span>
+      </div>
+      <div class="track-list">
+        <div class="track-item playing">
+          <div class="playing-bar" style="width:16px">
+            <span style="height:14px; animation: none;"></span>
+            <span style="height:8px;"></span>
+            <span style="height:11px;"></span>
+          </div>
+          <div class="track-thumb" style="background:#e6f5ee;">🎵</div>
+          <div class="track-info">
+            <div class="track-name">Essence (feat. Tems)</div>
+            <div class="track-artist">Wizkid</div>
+          </div>
+          <span class="track-genre genre-afrobeats">Afrobeats</span>
+          <span class="track-dur">3:38</span>
+          <div class="track-actions">
+            <i class="ti ti-heart-filled" style="color: var(--g-green)" aria-hidden="true"></i>
+            <i class="ti ti-download" aria-hidden="true"></i>
+            <i class="ti ti-dots" aria-hidden="true"></i>
+          </div>
+        </div>
+        <div class="track-item">
+          <span class="track-num">2</span>
+          <div class="track-thumb" style="background:#e6ecfa;">🎤</div>
+          <div class="track-info">
+            <div class="track-name">Rich Flex</div>
+            <div class="track-artist">Drake & 21 Savage</div>
+          </div>
+          <span class="track-genre genre-hiphop">Hip-Hop</span>
+          <span class="track-dur">3:59</span>
+          <div class="track-actions">
+            <i class="ti ti-heart" aria-hidden="true"></i>
+            <i class="ti ti-download" aria-hidden="true"></i>
+            <i class="ti ti-dots" aria-hidden="true"></i>
+          </div>
+        </div>
+        <div class="track-item">
+          <span class="track-num">3</span>
+          <div class="track-thumb" style="background:#fdf3dc;">🎹</div>
+          <div class="track-info">
+            <div class="track-name">Goodness of God</div>
+            <div class="track-artist">CeCe Winans</div>
+          </div>
+          <span class="track-genre genre-gospel">Gospel</span>
+          <span class="track-dur">5:12</span>
+          <div class="track-actions">
+            <i class="ti ti-heart" aria-hidden="true"></i>
+            <i class="ti ti-download" aria-hidden="true"></i>
+            <i class="ti ti-dots" aria-hidden="true"></i>
+          </div>
+        </div>
+        <div class="track-item">
+          <span class="track-num">4</span>
+          <div class="track-thumb" style="background:#e6f5ee;">🥁</div>
+          <div class="track-info">
+            <div class="track-name">Peru</div>
+            <div class="track-artist">Fireboy DML</div>
+          </div>
+          <span class="track-genre genre-afrobeats">Afrobeats</span>
+          <span class="track-dur">3:05</span>
+          <div class="track-actions">
+            <i class="ti ti-heart" aria-hidden="true"></i>
+            <i class="ti ti-download" aria-hidden="true"></i>
+            <i class="ti ti-dots" aria-hidden="true"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Artists -->
+      <div class="section-header">
+        <span class="section-title">🎤 Featured Artists</span>
+        <span class="see-all">See all</span>
+      </div>
+      <div class="artist-grid">
+        <div class="artist-card">
+          <div class="artist-avatar" style="background: var(--g-green);">WZ</div>
+          <div class="artist-name">Wizkid</div>
+          <div class="artist-followers">12.4M followers</div>
+          <div class="verified"><i class="ti ti-rosette-discount-check" aria-hidden="true"></i></div>
+        </div>
+        <div class="artist-card">
+          <div class="artist-avatar" style="background: var(--g-blue);">BN</div>
+          <div class="artist-name">Burna Boy</div>
+          <div class="artist-followers">9.1M followers</div>
+          <div class="verified"><i class="ti ti-rosette-discount-check" aria-hidden="true"></i></div>
+        </div>
+        <div class="artist-card">
+          <div class="artist-avatar" style="background: var(--g-gold);">TM</div>
+          <div class="artist-name">Tems</div>
+          <div class="artist-followers">7.8M followers</div>
+          <div class="verified"><i class="ti ti-rosette-discount-check" aria-hidden="true"></i></div>
+        </div>
+        <div class="artist-card">
+          <div class="artist-avatar" style="background: #7c3aed;">FD</div>
+          <div class="artist-name">Fireboy DML</div>
+          <div class="artist-followers">4.2M followers</div>
+          <div class="verified"><i class="ti ti-rosette-discount-check" aria-hidden="true"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Player bar -->
+    <div class="player">
+      <div class="player-thumb">🎵</div>
+      <div class="player-info" style="width:120px">
+        <div class="player-title">Essence</div>
+        <div class="player-artist">Wizkid ft. Tems</div>
+      </div>
+      <div class="player-controls">
+        <div class="ctrl-btns">
+          <i class="ti ti-arrows-shuffle" aria-hidden="true"></i>
+          <i class="ti ti-player-skip-back" aria-hidden="true"></i>
+          <div class="play-btn"><i class="ti ti-player-pause" aria-hidden="true"></i></div>
+          <i class="ti ti-player-skip-forward" aria-hidden="true"></i>
+          <i class="ti ti-repeat" aria-hidden="true"></i>
+        </div>
+        <div class="progress-row">
+          <span class="prog-time">1:26</span>
+          <div class="progress-track">
+            <div class="progress-fill"></div>
+            <div class="progress-dot"></div>
+          </div>
+          <span class="prog-time">3:38</span>
+        </div>
+      </div>
+      <div class="player-right">
+        <i class="ti ti-heart" aria-hidden="true"></i>
+        <i class="ti ti-volume" aria-hidden="true"></i>
+        <div class="vol-bar"><div class="vol-fill"></div></div>
+        <div class="dl-btn"><i class="ti ti-download" aria-hidden="true"></i> Download</div>
+      </div>
+    </div>
+  </div>
+</div>

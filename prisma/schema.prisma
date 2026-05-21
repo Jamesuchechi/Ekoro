@@ -1,0 +1,271 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  listener
+  artist
+  admin
+}
+
+enum SubscriptionPlan {
+  free
+  pro
+  artist_pro
+}
+
+enum DownloadType {
+  free
+  paid
+  premium_only
+}
+
+enum TrackStatus {
+  processing
+  published
+  unlisted
+  removed
+}
+
+enum AlbumType {
+  album
+  ep
+  single
+}
+
+model User {
+  id           String           @id @db.Uuid
+  email        String           @unique
+  username     String           @unique
+  displayName  String?          @map("display_name")
+  avatarUrl    String?          @map("avatar_url")
+  bio          String?
+  role         UserRole         @default(listener)
+  plan         SubscriptionPlan @default(free)
+  isVerified   Boolean          @default(false) @map("is_verified")
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  // Relationships
+  tracks        Track[]
+  albums        Album[]
+  playlists     Playlist[]
+  likes         Like[]
+  comments      Comment[]
+  followers     Follow[]         @relation("UserFollowers")
+  following     Follow[]         @relation("UserFollowing")
+  subscriptions Subscription[]
+  purchases     Purchase[]
+  tipsSent      Tip[]            @relation("TipsSent")
+  tipsReceived  Tip[]            @relation("TipsReceived")
+  playEvents    PlayEvent[]
+
+  @@map("users")
+}
+
+model Track {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  artistId        String       @map("artist_id") @db.Uuid
+  title           String
+  slug            String       @unique
+  description     String?
+  coverArtUrl     String?      @map("cover_art_url")
+  durationMs      Int          @map("duration_ms")
+  genre           String?
+  mood            String?
+  bpm             Int?
+  key             String?
+  releaseDate     DateTime?    @map("release_date")
+  isDownloadable  Boolean      @default(true) @map("is_downloadable")
+  downloadType    DownloadType @default(free) @map("download_type")
+  downloadPrice   Decimal?     @map("download_price") @db.Decimal(10, 2)
+  playCount       BigInt       @default(0) @map("play_count")
+  downloadCount   BigInt       @default(0) @map("download_count")
+  status          TrackStatus  @default(processing)
+  hlsPlaylistUrl  String?      @map("hls_playlist_url")
+  audioFiles      Json?        @map("audio_files")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  // Relationships
+  artist         User            @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  playlistTracks PlaylistTrack[]
+  albumTracks    AlbumTrack[]
+  likes          Like[]
+  comments       Comment[]
+  purchases      Purchase[]
+  tips           Tip[]
+  playEvents     PlayEvent[]
+
+  @@index([artistId])
+  @@index([genre])
+  @@index([status])
+  @@map("tracks")
+}
+
+model Album {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  artistId    String    @map("artist_id") @db.Uuid
+  title       String
+  slug        String    @unique
+  coverArtUrl String?   @map("cover_art_url")
+  description String?
+  genre       String?
+  releaseDate DateTime? @map("release_date")
+  albumType   AlbumType @default(album) @map("album_type")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  // Relationships
+  artist      User         @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  albumTracks AlbumTrack[]
+
+  @@map("albums")
+}
+
+model AlbumTrack {
+  albumId    String @map("album_id") @db.Uuid
+  trackId    String @map("track_id") @db.Uuid
+  trackOrder Int    @map("track_order")
+
+  album Album @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  track Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@id([albumId, trackId])
+  @@map("album_tracks")
+}
+
+model Playlist {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  title       String
+  description String?
+  coverArtUrl String?  @map("cover_art_url")
+  isPublic    Boolean  @default(true) @map("is_public")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relationships
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  playlistTracks PlaylistTrack[]
+
+  @@map("playlists")
+}
+
+model PlaylistTrack {
+  playlistId String   @map("playlist_id") @db.Uuid
+  trackId    String   @map("track_id") @db.Uuid
+  addedAt    DateTime @default(now()) @map("added_at")
+  trackOrder Int      @map("track_order")
+
+  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  track    Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@id([playlistId, trackId])
+  @@map("playlist_tracks")
+}
+
+model Follow {
+  followerId  String   @map("follower_id") @db.Uuid
+  followingId String   @map("following_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  follower  User @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@map("follows")
+}
+
+model Like {
+  userId    String   @map("user_id") @db.Uuid
+  trackId   String   @map("track_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@id([userId, trackId])
+  @@map("likes")
+}
+
+model Comment {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  trackId     String   @map("track_id") @db.Uuid
+  body        String
+  timestampMs Int?     @map("timestamp_ms")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Subscription {
+  id                   String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId               String           @map("user_id") @db.Uuid
+  stripeSubscriptionId String?          @unique @map("stripe_subscription_id")
+  plan                 SubscriptionPlan
+  status               String
+  currentPeriodStart   DateTime?        @map("current_period_start")
+  currentPeriodEnd     DateTime?        @map("current_period_end")
+  createdAt            DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model Purchase {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  trackId         String   @map("track_id") @db.Uuid
+  amountCents     Int      @map("amount_cents")
+  currency        String   @default("USD")
+  stripePaymentId String?  @unique @map("stripe_payment_id")
+  purchasedAt     DateTime @default(now()) @map("purchased_at")
+
+  user  User  @relation(fields: [userId], references: [id])
+  track Track @relation(fields: [trackId], references: [id])
+
+  @@map("purchases")
+}
+
+model Tip {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  fromUserId      String   @map("from_user_id") @db.Uuid
+  toArtistId      String   @map("to_artist_id") @db.Uuid
+  trackId         String?  @map("track_id") @db.Uuid
+  amountCents     Int      @map("amount_cents")
+  currency        String   @default("USD")
+  stripePaymentId String?  @unique @map("stripe_payment_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  fromUser User   @relation("TipsSent", fields: [fromUserId], references: [id])
+  toArtist User   @relation("TipsReceived", fields: [toArtistId], references: [id])
+  track    Track? @relation(fields: [trackId], references: [id])
+
+  @@map("tips")
+}
+
+model PlayEvent {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  trackId          String   @map("track_id") @db.Uuid
+  userId           String?  @map("user_id") @db.Uuid
+  ipHash           String?  @map("ip_hash")
+  durationPlayedMs Int?     @map("duration_played_ms")
+  completed        Boolean  @default(false)
+  playedAt         DateTime @default(now()) @map("played_at")
+
+  track Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  user  User? @relation(fields: [userId], references: [id])
+
+  @@index([trackId])
+  @@index([playedAt])
+  @@map("play_events")
+}
