@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
 import { Disc, Loader2, ArrowLeft } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -16,6 +17,7 @@ type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const {
     register,
@@ -27,10 +29,20 @@ export default function ForgotPasswordPage() {
 
   const onSubmit = async (data: ForgotPasswordInput) => {
     setIsLoading(true);
-    // Mock recovery email delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsLoading(false);
-    setSuccess(true);
+    setErrorMsg(null);
+    const supabase = createClient();
+
+    const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (error) {
+      setErrorMsg(error.message);
+      setIsLoading(false);
+    } else {
+      setIsLoading(false);
+      setSuccess(true);
+    }
   };
 
   return (
@@ -66,6 +78,11 @@ export default function ForgotPasswordPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {errorMsg && (
+              <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-medium">
+                {errorMsg}
+              </div>
+            )}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-white/60 mb-2">
                 Email Address

@@ -6,6 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
 import { Disc, Eye, EyeOff, Loader2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -18,6 +20,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const router = useRouter();
 
   const {
     register,
@@ -29,15 +33,30 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginInput) => {
     setIsLoading(true);
-    // Mock authentication delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsLoading(false);
-    setSuccess(true);
+    setErrorMsg(null);
+    const supabase = createClient();
+    
+    const { error } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    });
+
+    if (error) {
+      setErrorMsg(error.message);
+      setIsLoading(false);
+    } else {
+      setSuccess(true);
+      router.refresh();
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1500);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-900 to-black p-4">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-ekoro-blue/10 via-transparent to-transparent pointer-events-none" />
+
 
       <div className="w-full max-w-md bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl p-8 shadow-2xl relative z-10">
         <div className="flex flex-col items-center mb-8">
@@ -58,6 +77,11 @@ export default function LoginPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {errorMsg && (
+              <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-medium">
+                {errorMsg}
+              </div>
+            )}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-white/60 mb-2">
                 Email Address

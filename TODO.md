@@ -66,42 +66,42 @@
 
 ### 1.1 Database & ORM Setup
 
-- [ ] 🔴 Install and configure Prisma with Supabase PostgreSQL connection
-- [ ] 🔴 Write initial schema migration: `users` (linked to `auth.users`), `tracks`, `albums`, `play_events`
-- [ ] 🔴 Write Prisma seed script with sample users and tracks for development
-- [ ] 🟡 Set up database connection pooling (using Supabase built-in PgBouncer/Supavisor)
-- [ ] 🟡 Create SQL triggers to sync Supabase Auth metadata to `public.users` table
+- [x] 🔴 Install and configure Prisma with Supabase PostgreSQL connection
+- [x] 🔴 Write initial schema migration: `users` (linked to `auth.users`), `tracks`, `albums`, `play_events`
+- [x] 🔴 Write Prisma seed script with sample users and tracks for development
+- [x] 🟡 Set up database connection pooling (using Supabase built-in PgBouncer/Supavisor)
+- [x] 🟡 Create SQL triggers to sync Supabase Auth metadata to `public.users` table
 
 ### 1.2 Backend — Next.js Foundation
 
-- [ ] 🔴 Set up Next.js App Router API route structure (`src/app/api/...`) with TypeScript
-- [ ] 🔴 Set up global error and exception handlers with consistent JSON error responses
-- [ ] 🔴 Set up API route request validation helper using Zod
-- [ ] 🔴 Set up API rate limiting (e.g. Next.js Edge middleware + Upstash or simple cache)
-- [ ] 🟡 Set up structured logging for Next.js server actions and API routes
+- [x] 🔴 Set up Next.js App Router API route structure (`src/app/api/...`) with TypeScript
+- [x] 🔴 Set up global error and exception handlers with consistent JSON error responses
+- [x] 🔴 Set up API route request validation helper using Zod
+- [x] 🔴 Set up API rate limiting (e.g. Next.js Edge middleware + Upstash or simple cache)
+- [x] 🟡 Set up structured logging for Next.js server actions and API routes
 - [x] 🟡 Set up `/api/health` endpoint
 - [x] 🟢 Set up standard Route Handler prefix `/api`
 
 ### 1.3 Authentication
 
-- [ ] 🔴 Integrate Supabase Auth Client (`@supabase/ssr`) in Next.js
-- [ ] 🔴 Implement sign-up flow calling `supabase.auth.signUp()` with validation
-- [ ] 🔴 Implement login flow calling `supabase.auth.signInWithPassword()` with cookies sync
-- [ ] 🔴 Implement sign-out flow calling `supabase.auth.signOut()`
-- [ ] 🔴 Set up Next.js middleware for reading and syncing Supabase session cookies
-- [ ] 🔴 Set up Role-based auth guards in Server Components & Server Actions (checking user role)
-- [ ] 🟡 Implement password reset flow: request reset link and handle callback
-- [ ] 🟡 Configure password reset routes on client and server
+- [x] 🔴 Integrate Supabase Auth Client (`@supabase/ssr`) in Next.js
+- [x] 🔴 Implement sign-up flow calling `supabase.auth.signUp()` with validation
+- [x] 🔴 Implement login flow calling `supabase.auth.signInWithPassword()` with cookies sync
+- [x] 🔴 Implement sign-out flow calling `supabase.auth.signOut()`
+- [x] 🔴 Set up Next.js middleware for reading and syncing Supabase session cookies
+- [x] 🔴 Set up Role-based auth guards in Server Components & Server Actions (checking user role)
+- [x] 🟡 Implement password reset flow: request reset link and handle callback
+- [x] 🟡 Configure password reset routes on client and server
 - [ ] 🟡 Handle email verification redirects via Supabase Auth configuration
 - [ ] 🟢 Configure Google OAuth provider in Supabase Auth
 - [ ] 🟢 Configure Apple OAuth provider in Supabase Auth
 
 ### 1.4 File Storage (Supabase Storage)
 
-- [ ] 🔴 Configure Supabase Storage client in Next.js (`@supabase/supabase-js`)
-- [ ] 🔴 Utility function: `uploadToStorage(bucket, key, file)` → uploads track assets
-- [ ] 🔴 Utility function: Generate pre-signed URL via `supabase.storage.from().createSignedUrl()`
-- [ ] 🔴 Utility function: `deleteFromStorage(bucket, key)`
+- [x] 🔴 Configure Supabase Storage client in Next.js (`@supabase/supabase-js`)
+- [x] 🔴 Utility function: `uploadToStorage(bucket, key, file)` → uploads track assets
+- [x] 🔴 Utility function: Generate pre-signed URL via `supabase.storage.from().createSignedUrl()`
+- [x] 🔴 Utility function: `deleteFromStorage(bucket, key)`
 - [ ] 🟡 Set up CDN caching headers for assets stored in public buckets
 - [ ] 🟡 Configure CORS rules on Supabase Storage buckets
 

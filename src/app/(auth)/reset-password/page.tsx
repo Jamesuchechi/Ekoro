@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
 import { Disc, Eye, EyeOff, Loader2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 const resetPasswordSchema = z
   .object({
@@ -23,6 +24,7 @@ export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const {
     register,
@@ -34,10 +36,20 @@ export default function ResetPasswordPage() {
 
   const onSubmit = async (data: ResetPasswordInput) => {
     setIsLoading(true);
-    // Mock password update delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsLoading(false);
-    setSuccess(true);
+    setErrorMsg(null);
+    const supabase = createClient();
+
+    const { error } = await supabase.auth.updateUser({
+      password: data.password,
+    });
+
+    if (error) {
+      setErrorMsg(error.message);
+      setIsLoading(false);
+    } else {
+      setIsLoading(false);
+      setSuccess(true);
+    }
   };
 
   return (
@@ -73,6 +85,11 @@ export default function ResetPasswordPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {errorMsg && (
+              <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-medium">
+                {errorMsg}
+              </div>
+            )}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-white/60 mb-1.5">
                 New Password

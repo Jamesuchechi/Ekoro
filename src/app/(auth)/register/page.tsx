@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
 import { Disc, Eye, EyeOff, Loader2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 const registerSchema = z
   .object({
@@ -28,6 +29,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const {
     register,
@@ -39,10 +41,34 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterInput) => {
     setIsLoading(true);
-    // Mock registration delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsLoading(false);
-    setSuccess(true);
+    setErrorMsg(null);
+    const supabase = createClient();
+    
+    // Generate clean username from email prefix
+    const baseUsername = data.email.split("@")[0].replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const generatedUsername = `${baseUsername}_${randomSuffix}`;
+
+    const { error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: {
+          display_name: data.name,
+          username: generatedUsername,
+          role: "listener",
+        },
+      },
+    });
+
+    if (error) {
+      setErrorMsg(error.message);
+      setIsLoading(false);
+    } else {
+      setIsLoading(false);
+      setSuccess(true);
+    }
   };
 
   return (
@@ -78,6 +104,11 @@ export default function RegisterPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {errorMsg && (
+              <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-medium">
+                {errorMsg}
+              </div>
+            )}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-white/60 mb-1.5">
                 Full Name
