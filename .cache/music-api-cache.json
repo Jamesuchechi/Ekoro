@@ -250,5 +250,126 @@
       ]
     },
     "expiresAt": 1779551450373
+  },
+  "search:Davido:5": {
+    "value": {
+      "artists": [
+        {
+          "id": "a9ae7d4b-10f0-4da8-8b8c-21722a074a54",
+          "name": "Davido",
+          "image": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+          "genres": [
+            "Artist"
+          ]
+        },
+        {
+          "id": "lf_art_Dav%C3%ACdd",
+          "name": "Davìdd",
+          "image": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+          "genres": [
+            "Artist"
+          ]
+        },
+        {
+          "id": "3f2c5641-28e6-4160-9748-8f3782186c21",
+          "name": "Davide Dalmonte",
+          "image": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+          "genres": [
+            "Artist"
+          ]
+        },
+        {
+          "id": "lf_art_Davide%20Nigro",
+          "name": "Davide Nigro",
+          "image": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+          "genres": [
+            "Artist"
+          ]
+        },
+        {
+          "id": "2f0917c2-855b-4bba-b270-28998035ec34",
+          "name": "Davide Sonar",
+          "image": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+          "genres": [
+            "Artist"
+          ]
+        }
+      ],
+      "albums": [
+        {
+          "id": "cb508fc4-728c-43f1-abc0-5af0deb87596",
+          "title": "Timeless",
+          "cover": "https://lastfm.freetls.fastly.net/i/u/300x300/06687a062928c2c9ba4d3236663b3ddb.png",
+          "artist": "Davido",
+          "year": "Recent"
+        },
+        {
+          "id": "lf_alb_Davido:5ive",
+          "title": "5ive",
+          "cover": "https://lastfm.freetls.fastly.net/i/u/300x300/82592369aed658336f64156a3b602579.png",
+          "artist": "Davido",
+          "year": "Recent"
+        },
+        {
+          "id": "70fdec9f-9d18-4f5b-ac6f-c9e377d08176",
+          "title": "Fall",
+          "cover": "https://lastfm.freetls.fastly.net/i/u/300x300/5abe69772ced7b6dd681948a3815bfc5.png",
+          "artist": "Davido",
+          "year": "Recent"
+        },
+        {
+          "id": "84a6eafd-3a28-475f-966c-083f657a8838",
+          "title": "A Good Time",
+          "cover": "https://lastfm.freetls.fastly.net/i/u/300x300/292ca256e4380dd7e6949a2a9f7974b1.png",
+          "artist": "Davido",
+          "year": "Recent"
+        },
+        {
+          "id": "lf_alb_Davido:Aye",
+          "title": "Aye",
+          "cover": "https://lastfm.freetls.fastly.net/i/u/300x300/3c6bcc15862f7249fbb49ab1026765d0.png",
+          "artist": "Davido",
+          "year": "Recent"
+        }
+      ],
+      "tracks": [
+        {
+          "id": "4ba041cf-21bf-4cc9-9304-371ffc5cf744",
+          "title": "Fall",
+          "artist": "Davido",
+          "duration": "3:30",
+          "cover": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png"
+        },
+        {
+          "id": "lf_tr_Davido:KANTE%20(feat.%20Fave)",
+          "title": "KANTE (feat. Fave)",
+          "artist": "Davido",
+          "duration": "3:30",
+          "cover": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png"
+        },
+        {
+          "id": "lf_tr_Davido:UNAVAILABLE%20(feat.%20Musa%20Keys)",
+          "title": "UNAVAILABLE (feat. Musa Keys)",
+          "artist": "Davido",
+          "duration": "3:30",
+          "cover": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png"
+        },
+        {
+          "id": "lf_tr_Davido:FEEL",
+          "title": "FEEL",
+          "artist": "Davido",
+          "duration": "3:30",
+          "cover": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png"
+        },
+        {
+          "id": "2d1be0b0-f010-4bb7-b9c7-c1de713a6341",
+          "title": "Aye",
+          "artist": "Davido",
+          "duration": "3:30",
+          "cover": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png"
+        }
+      ]
+    },
+    "expiresAt": 1779467157452
   }
 }
