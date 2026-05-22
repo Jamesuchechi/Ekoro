@@ -1,0 +1,254 @@
+{
+  "rec:trending:tracks:10": {
+    "value": [
+      {
+        "id": "ffbf7862-2476-4164-ac32-f5904ccefe0f",
+        "title": "Stateside + Zara Larsson",
+        "artist": "PinkPantheress",
+        "duration": "3:30",
+        "emoji": "🔥",
+        "color": "from-blue-600 to-indigo-800"
+      },
+      {
+        "id": "23478b23-7898-4c08-b162-69e775fc109a",
+        "title": "Make Them Cry",
+        "artist": "Drake",
+        "duration": "3:30",
+        "emoji": "⚡",
+        "color": "from-emerald-600 to-teal-800"
+      },
+      {
+        "id": "519a25e7-a8ed-49ef-a716-be474baca793",
+        "title": "Dust",
+        "artist": "Drake",
+        "duration": "3:30",
+        "emoji": "🌟",
+        "color": "from-amber-600 to-orange-800"
+      },
+      {
+        "id": "48b2bd08-1d65-4ff2-9bae-50b1660e20a4",
+        "title": "Whisper My Name",
+        "artist": "Drake",
+        "duration": "3:30",
+        "emoji": "🎸",
+        "color": "from-purple-600 to-fuchsia-800"
+      },
+      {
+        "id": "trending_t_4",
+        "title": "Earrings",
+        "artist": "Malcolm Todd",
+        "duration": "3:30",
+        "emoji": "🎵",
+        "color": "from-red-500 to-rose-700"
+      },
+      {
+        "id": "005fd94f-7394-379b-afee-d9e643512a92",
+        "title": "Billie Jean",
+        "artist": "Michael Jackson",
+        "duration": "3:30",
+        "emoji": "🌊",
+        "color": "from-green-500 to-emerald-700"
+      },
+      {
+        "id": "trending_t_6",
+        "title": "Ran To Atlanta (feat. Future & Molly Santana)",
+        "artist": "Drake",
+        "duration": "3:30",
+        "emoji": "🎙️",
+        "color": "from-cyan-500 to-blue-700"
+      },
+      {
+        "id": "1179a0f5-9874-4865-9e03-0740e7d04893",
+        "title": "Janice STFU",
+        "artist": "Drake",
+        "duration": "3:30",
+        "emoji": "✨",
+        "color": "from-yellow-500 to-amber-600"
+      },
+      {
+        "id": "1332cc5a-e295-467f-bb2c-fa5ba7e1169e",
+        "title": "NATIONAL TREASURES",
+        "artist": "Drake",
+        "duration": "3:30",
+        "emoji": "❤️",
+        "color": "from-blue-600 to-indigo-800"
+      },
+      {
+        "id": "dcdabdbf-04fa-4757-8374-0bda5e999b07",
+        "title": "Shabang",
+        "artist": "Drake",
+        "duration": "3:30",
+        "emoji": "⚡",
+        "color": "from-emerald-600 to-teal-800"
+      }
+    ],
+    "expiresAt": 1779486625350
+  },
+  "image:artist:efc5d365-a448-4e2f-9b5f-4a7c84be725c": {
+    "value": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+    "expiresAt": 1782057026747
+  },
+  "image:artist:508fc5b7-0fe3-4575-9ba4-24f4d54cd9e5": {
+    "value": "/images/default-artist.png",
+    "expiresAt": 1782057027015
+  },
+  "image:artist:a82dcdb3-d8fd-45a4-90cf-5844a2e927da": {
+    "value": "/images/default-artist.png",
+    "expiresAt": 1782057027420
+  },
+  "image:artist:31438b91-a7a9-4b44-a264-3c6fd6586ed8": {
+    "value": "/images/default-artist.png",
+    "expiresAt": 1782057027977
+  },
+  "image:artist:429bb543-779c-4556-886b-e6af1f156e89": {
+    "value": "/images/default-artist.png",
+    "expiresAt": 1782057028344
+  },
+  "image:album:b08e76ae-cf69-456b-a4e1-0a57e650465e": {
+    "value": "https://coverartarchive.org/release/7fa30be8-c93d-4564-811a-fde88dde1ac1/43161685487.png",
+    "expiresAt": 1782057033052
+  },
+  "image:album:2b0a0524-3fb8-4844-aad0-3e29283db570": {
+    "value": "https://coverartarchive.org/release/0e280238-4dbc-4c0e-a7b5-50468ac69b02/42891451817.jpg",
+    "expiresAt": 1782057036226
+  },
+  "image:album:b9c1c197-40c8-407c-b84e-8b3fe60e9bfc": {
+    "value": "https://coverartarchive.org/release/38f54b39-9ca5-4fed-974e-7e944254a437/41240278210.jpg",
+    "expiresAt": 1782057039093
+  },
+  "image:album:96b72bb5-c0d4-435e-b002-e98db70384fb": {
+    "value": "https://coverartarchive.org/release/fe70d690-0cdf-4d1a-84c0-248eb9786bf9/44925127371.jpg",
+    "expiresAt": 1782057042140
+  },
+  "image:album:ec53d8b3-e136-4c3e-b558-aeca2a7a7f81": {
+    "value": "https://coverartarchive.org/release/34ebe198-5350-4919-ae30-586a820a2d5f/40764924325.jpg",
+    "expiresAt": 1782057044930
+  },
+  "image:album:6e1d56c5-7f35-466b-a98d-937755cd7dbb": {
+    "value": "https://coverartarchive.org/release/d7ace8c9-f52c-4190-930f-92ae792cfeeb/38708254416.jpg",
+    "expiresAt": 1782057050372
+  },
+  "image:album:f392eac9-e2da-4ae7-8b8d-2c47f581e348": {
+    "value": "/images/default-album.png",
+    "expiresAt": 1782057048313
+  },
+  "image:album:fcdf6e84-582f-4cbc-a9a1-850bf7befd96": {
+    "value": "/images/default-album.png",
+    "expiresAt": 1782057048581
+  },
+  "search:Wizkid:5": {
+    "value": {
+      "artists": [
+        {
+          "id": "efc5d365-a448-4e2f-9b5f-4a7c84be725c",
+          "name": "Wizkid",
+          "image": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
+          "genres": [
+            "pop",
+            "afrobeat",
+            "afropop"
+          ]
+        },
+        {
+          "id": "508fc5b7-0fe3-4575-9ba4-24f4d54cd9e5",
+          "name": "Wizkid",
+          "image": "/images/default-artist.png",
+          "genres": []
+        },
+        {
+          "id": "a82dcdb3-d8fd-45a4-90cf-5844a2e927da",
+          "name": "Wizkid Sound",
+          "image": "/images/default-artist.png",
+          "genres": []
+        },
+        {
+          "id": "31438b91-a7a9-4b44-a264-3c6fd6586ed8",
+          "name": "MC Wizkid",
+          "image": "/images/default-artist.png",
+          "genres": []
+        },
+        {
+          "id": "429bb543-779c-4556-886b-e6af1f156e89",
+          "name": "Wizkid & Asake",
+          "image": "/images/default-artist.png",
+          "genres": []
+        }
+      ],
+      "albums": [
+        {
+          "id": "b08e76ae-cf69-456b-a4e1-0a57e650465e",
+          "title": "Wizkid",
+          "cover": "https://coverartarchive.org/release/7fa30be8-c93d-4564-811a-fde88dde1ac1/43161685487.png",
+          "artist": "ReauBeau",
+          "year": 2022
+        },
+        {
+          "id": "2b0a0524-3fb8-4844-aad0-3e29283db570",
+          "title": "Lighter (Wizkid Extended)",
+          "cover": "https://coverartarchive.org/release/0e280238-4dbc-4c0e-a7b5-50468ac69b02/42891451817.jpg",
+          "artist": "A7S",
+          "year": 2025
+        },
+        {
+          "id": "b9c1c197-40c8-407c-b84e-8b3fe60e9bfc",
+          "title": "Apple Music Live: Wizkid",
+          "cover": "https://coverartarchive.org/release/38f54b39-9ca5-4fed-974e-7e944254a437/41240278210.jpg",
+          "artist": "Wizkid",
+          "year": 2022
+        },
+        {
+          "id": "96b72bb5-c0d4-435e-b002-e98db70384fb",
+          "title": "Soco (feat. Wizkid, Ceeza Milli, Spotless & Terri)",
+          "cover": "https://coverartarchive.org/release/fe70d690-0cdf-4d1a-84c0-248eb9786bf9/44925127371.jpg",
+          "artist": "StarBoy",
+          "year": 2018
+        },
+        {
+          "id": "ec53d8b3-e136-4c3e-b558-aeca2a7a7f81",
+          "title": "Zombie",
+          "cover": "https://coverartarchive.org/release/34ebe198-5350-4919-ae30-586a820a2d5f/40764924325.jpg",
+          "artist": "Wizkid",
+          "year": 2012
+        }
+      ],
+      "tracks": [
+        {
+          "id": "a7cccba8-c24d-426e-b4b8-eb65bd4e87d0",
+          "title": "Wizkid",
+          "artist": "ReauBeau",
+          "duration": "2:43",
+          "cover": "https://coverartarchive.org/release/7fa30be8-c93d-4564-811a-fde88dde1ac1/43161685487.png"
+        },
+        {
+          "id": "3d853167-3dab-42e7-9000-c80b315cb054",
+          "title": "Prices ft. Wizkid",
+          "artist": "Camp Mulla",
+          "duration": "4:01",
+          "cover": "https://coverartarchive.org/release/d7ace8c9-f52c-4190-930f-92ae792cfeeb/38708254416.jpg"
+        },
+        {
+          "id": "d41f650d-178a-4f0a-aba1-15881a07eb30",
+          "title": "Lighter - Wizkid Extended",
+          "artist": "A7S",
+          "duration": "3:06",
+          "cover": "https://coverartarchive.org/release/0e280238-4dbc-4c0e-a7b5-50468ac69b02/42891451817.jpg"
+        },
+        {
+          "id": "1685b41b-7896-4d1a-bdbf-62a489a6cd90",
+          "title": "Mr Eazi and Wizkid",
+          "artist": "Mr Eazi",
+          "duration": "4:00",
+          "cover": "/images/default-album.png"
+        },
+        {
+          "id": "5540b63a-fb39-468c-af77-0585b793d158",
+          "title": "– Wizkid Final (Baba Nla)",
+          "artist": "DJ WilSAF",
+          "duration": "0:00",
+          "cover": "/images/default-album.png"
+        }
+      ]
+    },
+    "expiresAt": 1779551450373
+  }
+}

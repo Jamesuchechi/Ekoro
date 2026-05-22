@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { Heart } from "lucide-react";
 import { Track } from "@/types";
 import { usePlayerStore } from "@/stores/playerStore";
@@ -43,9 +44,20 @@ export default function TrackRow({ track, index }: TrackRowProps) {
         {index + 1}
       </span>
       <div
-        className={`w-10 h-10 rounded-md bg-gradient-to-br ${track.color} flex items-center justify-center text-lg flex-shrink-0`}
+        className={`w-10 h-10 rounded-md bg-gradient-to-br ${track.color || "from-slate-800 to-slate-900"} flex items-center justify-center text-lg flex-shrink-0 relative overflow-hidden`}
       >
-        {track.emoji}
+        {track.cover || track.coverArtUrl ? (
+          <Image
+            src={(track.cover || track.coverArtUrl)!}
+            alt={track.title}
+            width={40}
+            height={40}
+            unoptimized
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          track.emoji || "🎵"
+        )}
       </div>
       <div className="flex-1 min-w-0">
         <h4 className="font-semibold text-sm truncate group-hover:text-ekoro-gold transition-colors">

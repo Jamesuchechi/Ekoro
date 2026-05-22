@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { Play, Pause, Heart } from "lucide-react";
 import { Track } from "@/types";
 import { usePlayerStore } from "@/stores/playerStore";
@@ -35,11 +36,22 @@ export default function TrackCard({ track }: TrackCardProps) {
       className="group relative bg-ekoro-dark-paper border border-white/5 hover:border-white/15 rounded-xl p-3 cursor-pointer transition-all hover:shadow-lg hover:shadow-black/20"
     >
       <div
-        className={`aspect-square w-full rounded-lg bg-gradient-to-br ${track.color} flex items-center justify-center text-4xl shadow-inner relative overflow-hidden`}
+        className={`aspect-square w-full rounded-lg bg-gradient-to-br ${track.color || "from-slate-800 to-slate-900"} flex items-center justify-center text-4xl shadow-inner relative overflow-hidden`}
       >
-        <span className="transform group-hover:scale-110 transition-transform duration-300">
-          {track.emoji}
-        </span>
+        {track.cover || track.coverArtUrl ? (
+          <Image
+            src={(track.cover || track.coverArtUrl)!}
+            alt={track.title}
+            width={300}
+            height={300}
+            unoptimized
+            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <span className="transform group-hover:scale-110 transition-transform duration-300">
+            {track.emoji || "🎵"}
+          </span>
+        )}
 
         {/* Play overlay button on hover */}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

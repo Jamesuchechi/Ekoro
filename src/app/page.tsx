@@ -1,104 +1,85 @@
 "use client";
 
-import React, { useState } from "react";
-import { Play, Sparkles } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Play, Sparkles, Loader2 } from "lucide-react";
 import { Track } from "@/types";
 import { usePlayerStore } from "@/stores/playerStore";
 import TrackCard from "@/components/Track/TrackCard";
 import TrackRow from "@/components/Track/TrackRow";
 
-const FEATURED_TRACKS: Track[] = [
-  {
-    id: "1",
-    title: "Essence",
-    artist: "Wizkid ft. Tems",
-    plays: "14.2M",
-    genre: "Afrobeats",
-    color: "from-blue-600 to-indigo-800",
-    emoji: "🔥",
-    duration: "3:38",
-  },
-  {
-    id: "2",
-    title: "Calm Down",
-    artist: "Rema",
-    plays: "9.8M",
-    genre: "Afrobeats",
-    color: "from-emerald-600 to-teal-800",
-    emoji: "🎸",
-    duration: "3:39",
-  },
-  {
-    id: "3",
-    title: "Deja Vu",
-    artist: "Burna Boy",
-    plays: "7.1M",
-    genre: "R&B",
-    color: "from-amber-600 to-orange-800",
-    emoji: "🌊",
-    duration: "3:11",
-  },
-  {
-    id: "4",
-    title: "Sungba",
-    artist: "Asake",
-    plays: "5.4M",
-    genre: "Hip-Hop",
-    color: "from-purple-600 to-fuchsia-800",
-    emoji: "⚡",
-    duration: "3:04",
-  },
-];
-
-const TRENDING_TRACKS: Track[] = [
-  {
-    id: "t1",
-    title: "City Boys",
-    artist: "Burna Boy",
-    plays: "2.1M",
-    genre: "Afrobeats",
-    color: "from-red-500 to-rose-700",
-    emoji: "🌟",
-    duration: "2:33",
-  },
-  {
-    id: "t2",
-    title: "Terminator",
-    artist: "Asake",
-    plays: "1.7M",
-    genre: "Afrobeats",
-    color: "from-green-500 to-emerald-700",
-    emoji: "⚡",
-    duration: "2:36",
-  },
-  {
-    id: "t3",
-    title: "Overdue",
-    artist: "Davido ft. Chris Brown",
-    plays: "1.2M",
-    genre: "Afrobeats",
-    color: "from-blue-500 to-cyan-700",
-    emoji: "🎙️",
-    duration: "3:40",
-  },
-  {
-    id: "t4",
-    title: "Holy Ghost",
-    artist: "Nathaniel Bassey",
-    plays: "980K",
-    genre: "Gospel",
-    color: "from-amber-500 to-yellow-600",
-    emoji: "🙌",
-    duration: "5:22",
-  },
-];
-
 export default function Home() {
   const { setTrack } = usePlayerStore();
   const [activeTab, setActiveTab] = useState<string>("For You");
+  const [trendingTracks, setTrendingTracks] = useState<Track[]>([]);
+  const [featuredTracks, setFeaturedTracks] = useState<Track[]>([]);
+
+  const [isTrendingLoading, setIsTrendingLoading] = useState(true);
+  const [isFeaturedLoading, setIsFeaturedLoading] = useState(true);
+
+  // Fetch trending tracks on mount
+  useEffect(() => {
+    async function fetchTrending() {
+      setIsTrendingLoading(true);
+      try {
+        const res = await fetch("/api/tracks");
+        if (res.ok) {
+          const data = await res.json();
+          if (data && Array.isArray(data.tracks)) {
+            setTrendingTracks(data.tracks);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch trending tracks:", err);
+      } finally {
+        setIsTrendingLoading(false);
+      }
+    }
+    fetchTrending();
+  }, []);
+
+  // Fetch featured tracks based on tab changes
+  useEffect(() => {
+    async function fetchFeatured() {
+      setIsFeaturedLoading(true);
+      try {
+        let query = activeTab;
+        if (activeTab === "For You") {
+          query = "Wizkid"; // default query for personalized home
+        } else if (activeTab === "New Releases") {
+          query = "Rema"; // popular query for new tracks
+        }
+
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && Array.isArray(data.tracks)) {
+            const mappedTracks: Track[] = data.tracks.map((t: any) => ({
+              id: t.id,
+              title: t.title,
+              artist: t.artist,
+              duration: t.duration,
+              cover: t.cover,
+              plays: "Live",
+              genre: activeTab,
+            }));
+            setFeaturedTracks(mappedTracks);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch featured tracks:", err);
+      } finally {
+        setIsFeaturedLoading(false);
+      }
+    }
+    fetchFeatured();
+  }, [activeTab]);
 
   const handleHeroPlay = () => {
-    setTrack(FEATURED_TRACKS[0]);
+    if (featuredTracks.length > 0) {
+      setTrack(featuredTracks[0]);
+    } else if (trendingTracks.length > 0) {
+      setTrack(trendingTracks[0]);
+    }
   };
 
   return (
@@ -110,23 +91,24 @@ export default function Home() {
 
         <div className="relative z-10 max-w-lg">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/10 text-ekoro-gold mb-4 border border-white/10">
-            <Sparkles className="w-3.5 h-3.5" /> Featured Album
+            <Sparkles className="w-3.5 h-3.5" /> Live Connection
           </span>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">
             Good evening, Adekola 👋
           </h2>
           <p className="text-sm text-white/70 mb-6 leading-relaxed">
-            Wizkid just dropped his new visual masterpiece album. Stream all tracks in lossless quality or download for offline listening.
+            MusicBrainz catalog and Last.fm recommendations are synchronized. Stream lossless audio metadata and discover artists.
           </p>
           <div className="flex flex-wrap gap-3">
             <button
               onClick={handleHeroPlay}
-              className="bg-ekoro-gold hover:bg-ekoro-gold/90 text-ekoro-blue-dark font-bold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-ekoro-gold/20 flex items-center gap-2 hover:scale-102 active:scale-98 transition-all"
+              disabled={featuredTracks.length === 0 && trendingTracks.length === 0}
+              className="bg-ekoro-gold hover:bg-ekoro-gold/90 disabled:bg-ekoro-gold/50 text-ekoro-blue-dark font-bold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-ekoro-gold/20 flex items-center gap-2 hover:scale-102 active:scale-98 transition-all"
             >
               <Play className="w-4 h-4 fill-current" /> Play Now
             </button>
             <button className="bg-white/10 hover:bg-white/15 text-white border border-white/10 font-bold text-sm px-6 py-2.5 rounded-xl flex items-center gap-2 transition-all">
-              View Album
+              Discover More
             </button>
           </div>
         </div>
@@ -152,15 +134,31 @@ export default function Home() {
       {/* FEATURED GRID */}
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold tracking-tight">Featured Tracks</h3>
+          <h3 className="text-lg font-bold tracking-tight">Featured Tracks ({activeTab})</h3>
           <button className="text-xs text-ekoro-gold hover:underline">See all →</button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-          {FEATURED_TRACKS.map((track) => (
-            <TrackCard key={track.id} track={track} />
-          ))}
-        </div>
+        {isFeaturedLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 py-12">
+            {[1, 2, 3, 4].map((n) => (
+              <div key={n} className="bg-white/5 border border-white/5 rounded-xl p-3 animate-pulse flex flex-col gap-3">
+                <div className="aspect-square w-full rounded-lg bg-white/5" />
+                <div className="h-4 bg-white/10 rounded w-3/4" />
+                <div className="h-3 bg-white/5 rounded w-1/2" />
+              </div>
+            ))}
+          </div>
+        ) : featuredTracks.length === 0 ? (
+          <div className="text-center py-12 text-white/40 text-sm bg-white/5 rounded-xl border border-white/5">
+            No tracks found matching &ldquo;{activeTab}&rdquo;. Try another filter.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+            {featuredTracks.map((track) => (
+              <TrackCard key={track.id} track={track} />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* TWO COLUMN ROW */}
@@ -168,15 +166,26 @@ export default function Home() {
         {/* TRENDING CHARTS */}
         <div className="bg-ekoro-dark-paper border border-white/5 rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-bold tracking-tight">🔥 Trending Charts</h3>
+            <h3 className="text-base font-bold tracking-tight">🔥 Trending Charts (Last.fm)</h3>
             <button className="text-xs text-ekoro-gold hover:underline">Full chart →</button>
           </div>
 
-          <div className="space-y-1">
-            {TRENDING_TRACKS.map((track, i) => (
-              <TrackRow key={track.id} track={track} index={i} />
-            ))}
-          </div>
+          {isTrendingLoading ? (
+            <div className="space-y-4 py-6 flex flex-col items-center justify-center text-white/40">
+              <Loader2 className="w-6 h-6 animate-spin text-ekoro-gold" />
+              <span className="text-xs">Loading live charts...</span>
+            </div>
+          ) : trendingTracks.length === 0 ? (
+            <div className="text-center py-6 text-white/40 text-sm">
+              Trending tracks could not be loaded.
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {trendingTracks.slice(0, 5).map((track, i) => (
+                <TrackRow key={track.id} track={track} index={i} />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* PRICING PLANS */}
