@@ -79,8 +79,8 @@
 - [ ] 🔴 Set up API route request validation helper using Zod
 - [ ] 🔴 Set up API rate limiting (e.g. Next.js Edge middleware + Upstash or simple cache)
 - [ ] 🟡 Set up structured logging for Next.js server actions and API routes
-- [ ] 🟡 Set up `/api/health` endpoint
-- [ ] 🟢 Set up standard Route Handler prefix `/api`
+- [x] 🟡 Set up `/api/health` endpoint
+- [x] 🟢 Set up standard Route Handler prefix `/api`
 
 ### 1.3 Authentication
 
@@ -152,8 +152,8 @@
 
 ### 1.8 Frontend — App Foundation
 
-- [ ] 🔴 Scaffold Next.js app with TypeScript and Tailwind CSS
-- [ ] 🔴 Set up Tailwind CSS with custom color tokens (Green, Gold, Royal Blue)
+- [x] 🔴 Scaffold Next.js app with TypeScript and Tailwind CSS
+- [x] 🔴 Set up Tailwind CSS with custom color tokens (Green, Gold, Royal Blue)
 - [ ] 🔴 Configure Supabase JS Client options and auto-attaching auth token to headers
 - [ ] 🔴 Set up TanStack Query provider with sensible default stale time
 - [ ] 🔴 Set up Zustand stores: `playerStore`, `authStore`
@@ -162,20 +162,20 @@
 
 ### 1.9 Frontend — Auth Pages
 
-- [ ] 🔴 `/register` page — form with validation (React Hook Form + Zod)
-- [ ] 🔴 `/login` page — form with validation
-- [ ] 🟡 `/forgot-password` page
-- [ ] 🟡 `/reset-password` page
+- [x] 🔴 `/register` page — form with validation (React Hook Form + Zod)
+- [x] 🔴 `/login` page — form with validation
+- [x] 🟡 `/forgot-password` page
+- [x] 🟡 `/reset-password` page
 - [ ] 🟢 OAuth buttons (Google, Apple) on login/register pages
 
 ### 1.10 Frontend — Core Layout
 
-- [ ] 🔴 Persistent sidebar navigation component
-- [ ] 🔴 Persistent bottom player bar (powered by Zustand `playerStore`)
+- [x] 🔴 Persistent sidebar navigation component
+- [x] 🔴 Persistent bottom player bar (powered by Zustand `playerStore`)
 - [ ] 🔴 Integrate Howler.js or hls.js for HLS audio playback
-- [ ] 🔴 Player: play/pause, skip, seek, volume control
-- [ ] 🔴 Player: show current track title, artist, cover art
-- [ ] 🔴 Responsive layout (sidebar collapses to bottom nav on mobile)
+- [x] 🔴 Player: play/pause, skip, seek, volume control
+- [x] 🔴 Player: show current track title, artist, cover art
+- [x] 🔴 Responsive layout (sidebar collapses to bottom nav on mobile)
 - [ ] 🟡 Mini player on mobile (expandable)
 - [ ] 🟡 Page transitions
 
@@ -502,12 +502,12 @@
 | Phase                  | Items   | Done  | Progress |
 | ---------------------- | ------- | ----- | -------- |
 | Phase 0 — Setup        | 24      | 17    | 71%      |
-| Phase 1 — MVP          | 67      | 0     | 0%       |
+| Phase 1 — MVP          | 67      | 13    | 19%      |
 | Phase 2 — Discovery    | 41      | 0     | 0%       |
 | Phase 3 — Monetization | 32      | 0     | 0%       |
 | Phase 4 — Social       | 22      | 0     | 0%       |
 | Phase 5 — Polish       | 48      | 0     | 0%       |
-| **Total**              | **234** | **17**| **7%**   |
+| **Total**              | **234** | **30**| **13%**  |
 
 ---
 
