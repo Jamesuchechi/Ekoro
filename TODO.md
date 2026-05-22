@@ -20,39 +20,39 @@
 
 ### Project & Tooling
 
-- [ ] 🔴 Initialize single-repo Next.js project with TypeScript, Tailwind CSS, and App Router
-- [ ] 🔴 Configure TypeScript `tsconfig.json` with strict mode
-- [ ] 🔴 Set up ESLint + Prettier with shared configs
+- [x] 🔴 Initialize single-repo Next.js project with TypeScript, Tailwind CSS, and App Router
+- [x] 🔴 Configure TypeScript `tsconfig.json` with strict mode
+- [x] 🔴 Set up ESLint + Prettier with shared configs
 - [ ] 🟡 Set up Husky pre-commit hooks (lint + typecheck on staged files)
-- [ ] 🟡 Configure VS Code workspace settings and recommended extensions
-- [ ] 🟢 Add `.editorconfig` for consistent formatting across editors
+- [x] 🟡 Configure VS Code workspace settings and recommended extensions
+- [x] 🟢 Add `.editorconfig` for consistent formatting across editors
 
 ### Version Control
 
-- [ ] 🔴 Initialize Git repository
-- [ ] 🔴 Set up `.gitignore` (node_modules, .env.local, .next, transcoded audio, etc.)
-- [ ] 🟡 Define branching strategy: `main` (production), `dev` (staging), `feat/*`, `fix/*`
-- [ ] 🟡 Set up branch protection rules on `main` (require PR + passing CI)
-- [ ] 🟢 Create PR template with checklist
+- [x] 🔴 Initialize Git repository
+- [x] 🔴 Set up `.gitignore` (node_modules, .env.local, .next, transcoded audio, etc.)
+- [x] 🟡 Define branching strategy: `main` (production), `dev` (staging), `feat/*`, `fix/*`
+- [x] 🟡 Set up branch protection rules on `main` (require PR + passing CI)
+- [x] 🟢 Create PR template with checklist
 
 ### Local Infrastructure (Supabase CLI)
 
-- [ ] 🔴 Initialize and start Supabase local environment via CLI (`supabase init` & `supabase start` using Docker)
-- [ ] 🔴 Write setup script: `scripts/setup.sh` (install deps, copy .env.example, start local Supabase, run migrations)
-- [ ] 🟡 Configure local Supabase storage buckets (`tracks`, `covers`, `avatars`, `streams`)
-- [ ] 🟡 Document local setup steps in README
+- [x] 🔴 Initialize and start Supabase local environment via CLI (`supabase init` & `supabase start` using Docker)
+- [x] 🔴 Write setup script: `scripts/setup.sh` (install deps, copy .env.example, start local Supabase, run migrations)
+- [x] 🟡 Configure local Supabase storage buckets (`tracks`, `covers`, `avatars`, `streams`)
+- [x] 🟡 Document local setup steps in README
 
 ### CI/CD Foundation
 
-- [ ] 🔴 Create GitHub Actions workflow: lint + typecheck on all PRs
-- [ ] 🟡 Create GitHub Actions workflow: run tests on all PRs
+- [x] 🔴 Create GitHub Actions workflow: lint + typecheck on all PRs
+- [x] 🟡 Create GitHub Actions workflow: run tests on all PRs
 - [ ] 🟡 Set up Supabase Cloud project for hosting Database, Auth, and Storage
 - [ ] 🟡 Set up Vercel project for Next.js application deployment
 - [ ] 🟢 Set up staging environment (auto-deploy `dev` branch)
 
 ### Environment & Secrets
 
-- [ ] 🔴 Create `.env.example` with all required variables documented (Next.js, Supabase, Stripe)
+- [x] 🔴 Create `.env.example` with all required variables documented (Next.js, Supabase, Stripe)
 - [ ] 🔴 Configure Supabase Cloud project settings and keys
 - [ ] 🔴 Configure Vercel environment variables for production
 - [ ] 🟡 Configure Supabase Storage bucket access and CORS policies
@@ -501,13 +501,13 @@
 
 | Phase                  | Items   | Done  | Progress |
 | ---------------------- | ------- | ----- | -------- |
-| Phase 0 — Setup        | 19      | 0     | 0%       |
+| Phase 0 — Setup        | 24      | 17    | 71%      |
 | Phase 1 — MVP          | 67      | 0     | 0%       |
 | Phase 2 — Discovery    | 41      | 0     | 0%       |
 | Phase 3 — Monetization | 32      | 0     | 0%       |
 | Phase 4 — Social       | 22      | 0     | 0%       |
 | Phase 5 — Polish       | 48      | 0     | 0%       |
-| **Total**              | **229** | **0** | **0%**   |
+| **Total**              | **234** | **17**| **7%**   |
 
 ---
 
