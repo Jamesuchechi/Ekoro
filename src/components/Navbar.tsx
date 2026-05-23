@@ -1,125 +1,505 @@
 "use client";
 
-import React from "react";
-import { Search, Disc } from "lucide-react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { Search, Disc3, Bell, Settings, ChevronDown, LogOut, LayoutDashboard, X } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { useRouter, usePathname } from "next/navigation";
+
+const NAV_LINKS = [
+  { href: "/", label: "Discover" },
+  { href: "/explore", label: "Explore" },
+  { href: "/explore?trending=true", label: "Trending" },
+];
 
 export default function Navbar() {
   const { user, profile, isLoading } = useAuthStore();
   const supabase = createClient();
   const router = useRouter();
+  const pathname = usePathname();
+  const [scrolled, setScrolled] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    setProfileOpen(false);
     router.refresh();
     router.push("/");
   };
 
   return (
-    <nav className="sticky top-0 z-50 flex items-center justify-between px-6 h-16 bg-ekoro-dark/85 backdrop-blur-md border-b border-white/5">
-      <div className="flex items-center gap-3">
-        <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-          <div className="w-9 h-9 bg-ekoro-gold rounded-lg flex items-center justify-center shadow-lg shadow-ekoro-gold/20 animate-pulse">
-            <Disc className="w-5 h-5 text-ekoro-blue-dark" />
-          </div>
-          <span className="text-xl font-bold tracking-tight text-white">
-            Ek<span className="text-ekoro-gold italic">oro</span>
-          </span>
-        </Link>
-      </div>
+    <header
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 40,
+        height: 56,
+        display: "flex",
+        alignItems: "center",
+        padding: "0 24px",
+        gap: 0,
+        background: scrolled
+          ? "rgba(8, 8, 8, 0.94)"
+          : "rgba(8, 8, 8, 0.8)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderBottom: scrolled
+          ? "1px solid var(--ek-border-mid)"
+          : "1px solid var(--ek-border)",
+        transition: "background 0.3s ease, border-color 0.3s ease",
+      }}
+    >
+      {/* Logo */}
+      <Link
+        href="/"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          textDecoration: "none",
+          marginRight: 36,
+          flexShrink: 0,
+        }}
+      >
+        <div
+          style={{
+            width: 30,
+            height: 30,
+            borderRadius: 8,
+            background: "linear-gradient(135deg, var(--ek-gold) 0%, #8B6914 100%)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Disc3 size={16} style={{ color: "#0f0f0f" }} />
+        </div>
+        <span
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: 20,
+            fontWeight: 400,
+            letterSpacing: "-0.02em",
+            color: "var(--ek-text-primary)",
+          }}
+        >
+          Ek<span style={{ color: "var(--ek-gold)", fontStyle: "italic" }}>oro</span>
+        </span>
+      </Link>
 
-      <div className="hidden md:flex items-center gap-8">
-        <Link href="/" className="text-sm font-medium text-white">
-          Discover
-        </Link>
-        <Link href="/explore" className="text-sm font-medium text-white/60 hover:text-white transition-colors">
-          Explore
-        </Link>
-        <Link href="/explore?trending=true" className="text-sm font-medium text-white/60 hover:text-white transition-colors">
-          Trending
-        </Link>
-      </div>
+      {/* Nav links */}
+      <nav style={{ display: "flex", alignItems: "center", gap: 4, flex: 1 }}>
+        {NAV_LINKS.map(({ href, label }) => {
+          const isActive = pathname === href || (href !== "/" && pathname?.startsWith(href.split("?")[0]));
+          return (
+            <Link
+              key={href}
+              href={href}
+              style={{
+                padding: "6px 14px",
+                borderRadius: 99,
+                fontSize: 13,
+                fontWeight: isActive ? 500 : 400,
+                color: isActive ? "var(--ek-text-primary)" : "var(--ek-text-secondary)",
+                background: isActive ? "var(--ek-surface)" : "transparent",
+                border: isActive ? "1px solid var(--ek-border)" : "1px solid transparent",
+                textDecoration: "none",
+                transition: "all 0.15s ease",
+                letterSpacing: "-0.01em",
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLAnchorElement).style.color = "var(--ek-text-primary)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLAnchorElement).style.color = "var(--ek-text-secondary)";
+                }
+              }}
+            >
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
 
-      <div className="flex items-center gap-4">
-        <div className="relative hidden sm:block">
-          <input
-            type="text"
-            placeholder="Search tracks, artists..."
-            className="pl-9 pr-4 py-1.5 w-64 bg-white/5 border border-white/10 rounded-full text-xs text-white placeholder-white/40 focus:outline-none focus:border-ekoro-gold/50 focus:bg-white/10 transition-all"
+      {/* Right side */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+        {/* Search */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            background: searchOpen ? "var(--ek-surface)" : "transparent",
+            border: `1px solid ${searchOpen ? "var(--ek-border-hi)" : "var(--ek-border)"}`,
+            borderRadius: 99,
+            padding: searchOpen ? "6px 14px 6px 12px" : "6px 10px",
+            width: searchOpen ? 220 : 36,
+            height: 34,
+            overflow: "hidden",
+            transition: "all 0.25s var(--ease-out-expo)",
+            cursor: searchOpen ? "text" : "pointer",
+          }}
+          onClick={() => !searchOpen && setSearchOpen(true)}
+        >
+          <Search
+            size={14}
+            style={{
+              color: searchOpen ? "var(--ek-text-secondary)" : "var(--ek-text-muted)",
+              flexShrink: 0,
+              cursor: "pointer",
+            }}
           />
-          <Search className="absolute left-3 top-2 w-3.5 h-3.5 text-white/40" />
+          {searchOpen && (
+            <>
+              <input
+                autoFocus
+                type="text"
+                placeholder="Search tracks, artists…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Escape" && setSearchOpen(false)}
+                style={{
+                  flex: 1,
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  fontSize: 13,
+                  color: "var(--ek-text-primary)",
+                  fontFamily: "var(--font-body)",
+                }}
+              />
+              <button
+                onClick={(e) => { e.stopPropagation(); setSearchOpen(false); setSearchQuery(""); }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  color: "var(--ek-text-muted)",
+                  cursor: "pointer",
+                  display: "flex",
+                  flexShrink: 0,
+                }}
+              >
+                <X size={13} />
+              </button>
+            </>
+          )}
         </div>
 
+        {/* Bell */}
+        <button
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 99,
+            background: "transparent",
+            border: "1px solid var(--ek-border)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "var(--ek-text-muted)",
+            cursor: "pointer",
+            transition: "all 0.15s ease",
+            position: "relative",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--ek-border-mid)";
+            (e.currentTarget as HTMLButtonElement).style.color = "var(--ek-text-secondary)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--ek-border)";
+            (e.currentTarget as HTMLButtonElement).style.color = "var(--ek-text-muted)";
+          }}
+        >
+          <Bell size={14} />
+          {/* Notification dot */}
+          <span
+            style={{
+              position: "absolute",
+              top: 7,
+              right: 7,
+              width: 5,
+              height: 5,
+              borderRadius: "50%",
+              background: "var(--ek-red)",
+              border: "1.5px solid var(--ek-ink)",
+            }}
+          />
+        </button>
+
+        {/* Auth state */}
         {isLoading ? (
-          <div className="w-8 h-8 rounded-full bg-white/5 animate-pulse" />
+          <div
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: "50%",
+              background: "var(--ek-surface)",
+              animation: "shimmer 1.5s infinite",
+            }}
+          />
         ) : profile ? (
-          <div className="flex items-center gap-3 relative group">
-            {profile.plan && profile.plan !== "free" && (
-              <span className="bg-ekoro-gold text-ekoro-blue-dark text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-sm uppercase tracking-wider hidden sm:inline-block">
-                {profile.plan.replace("_", " ")}
-              </span>
-            )}
-            
-            <button className="w-8 h-8 rounded-full overflow-hidden border border-white/10 hover:scale-105 transition-transform relative">
-              {profile.avatarUrl ? (
-                <Image
-                  src={profile.avatarUrl}
-                  alt={profile.displayName || "User profile"}
-                  fill
-                  sizes="32px"
-                  className="object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-tr from-ekoro-blue to-ekoro-green flex items-center justify-center text-xs font-bold text-white">
-                  {(profile.displayName || profile.username || "U").substring(0, 2).toUpperCase()}
+          <div style={{ position: "relative" }}>
+            <button
+              onClick={() => setProfileOpen(!profileOpen)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                background: profileOpen ? "var(--ek-surface)" : "transparent",
+                border: `1px solid ${profileOpen ? "var(--ek-border-mid)" : "var(--ek-border)"}`,
+                borderRadius: 99,
+                padding: "4px 10px 4px 4px",
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+              }}
+            >
+              {/* Avatar */}
+              <div
+                style={{
+                  width: 26,
+                  height: 26,
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  background: "linear-gradient(135deg, var(--ek-gold) 0%, #5b8dee 100%)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 10,
+                  fontWeight: 500,
+                  color: "#0f0f0f",
+                  flexShrink: 0,
+                  position: "relative",
+                }}
+              >
+                {profile.avatarUrl ? (
+                  <Image
+                    src={profile.avatarUrl}
+                    alt={profile.displayName || "User"}
+                    fill
+                    sizes="26px"
+                    style={{ objectFit: "cover" }}
+                  />
+                ) : (
+                  (profile.displayName || profile.username || "U").slice(0, 2).toUpperCase()
+                )}
+              </div>
+
+              <div style={{ textAlign: "left" }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 500,
+                    color: "var(--ek-text-primary)",
+                    lineHeight: 1.2,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {(profile.displayName || profile.username || "").split(" ")[0]}
                 </div>
-              )}
+                {profile.plan && profile.plan !== "free" && (
+                  <div
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 9,
+                      color: "var(--ek-gold)",
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {profile.plan.replace("_", " ")}
+                  </div>
+                )}
+              </div>
+              <ChevronDown
+                size={12}
+                style={{
+                  color: "var(--ek-text-muted)",
+                  transform: profileOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "transform 0.2s ease",
+                }}
+              />
             </button>
 
-            {/* Dropdown Menu on hover */}
-            <div className="absolute right-0 top-full pt-2 hidden group-hover:block z-50">
-              <div className="bg-slate-900 border border-white/10 rounded-xl p-2 w-48 shadow-xl">
-                <div className="px-3 py-1.5 text-xs text-white/50 border-b border-white/5 truncate">
-                  Signed in as <span className="font-semibold text-white block truncate">{profile.displayName || profile.username}</span>
+            {/* Dropdown */}
+            {profileOpen && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "calc(100% + 6px)",
+                  right: 0,
+                  background: "var(--ek-ink)",
+                  border: "1px solid var(--ek-border-mid)",
+                  borderRadius: 12,
+                  padding: "6px",
+                  width: 200,
+                  boxShadow: "0 16px 40px rgba(0,0,0,0.5)",
+                  animation: "fadeUp 0.15s ease",
+                  zIndex: 50,
+                }}
+              >
+                <div
+                  style={{
+                    padding: "8px 12px 10px",
+                    borderBottom: "1px solid var(--ek-border)",
+                    marginBottom: 4,
+                  }}
+                >
+                  <div style={{ fontSize: 13, fontWeight: 500, color: "var(--ek-text-primary)" }}>
+                    {profile.displayName || profile.username}
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--ek-text-tertiary)", marginTop: 1 }}>
+                    {user?.email}
+                  </div>
                 </div>
+
                 {profile.role === "artist" && (
-                  <Link
-                    href="/dashboard"
-                    className="flex w-full px-3 py-2 text-xs text-white hover:bg-white/5 rounded-lg transition-colors mt-1 font-medium"
+                  <button
+                    onClick={() => { router.push("/dashboard"); setProfileOpen(false); }}
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      background: "none",
+                      border: "none",
+                      padding: "8px 12px",
+                      borderRadius: 8,
+                      fontSize: 13,
+                      color: "var(--ek-text-secondary)",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      transition: "all 0.1s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.background = "var(--ek-surface)";
+                      (e.currentTarget as HTMLButtonElement).style.color = "var(--ek-text-primary)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.background = "none";
+                      (e.currentTarget as HTMLButtonElement).style.color = "var(--ek-text-secondary)";
+                    }}
                   >
-                    Creator Dashboard
-                  </Link>
+                    <LayoutDashboard size={14} />
+                    Creator dashboard
+                  </button>
                 )}
+
+                <button
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    background: "none",
+                    border: "none",
+                    padding: "8px 12px",
+                    borderRadius: 8,
+                    fontSize: 13,
+                    color: "var(--ek-text-secondary)",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    transition: "all 0.1s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.background = "var(--ek-surface)";
+                    (e.currentTarget as HTMLButtonElement).style.color = "var(--ek-text-primary)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.background = "none";
+                    (e.currentTarget as HTMLButtonElement).style.color = "var(--ek-text-secondary)";
+                  }}
+                >
+                  <Settings size={14} />
+                  Settings
+                </button>
+
+                <div style={{ height: 1, background: "var(--ek-border)", margin: "4px 0" }} />
+
                 <button
                   onClick={handleSignOut}
-                  className="flex w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 rounded-lg transition-colors mt-1 font-medium"
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    background: "none",
+                    border: "none",
+                    padding: "8px 12px",
+                    borderRadius: 8,
+                    fontSize: 13,
+                    color: "var(--ek-red)",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    transition: "background 0.1s ease",
+                    opacity: 0.85,
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.background = "rgba(224,85,85,0.1)";
+                    (e.currentTarget as HTMLButtonElement).style.opacity = "1";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.background = "none";
+                    (e.currentTarget as HTMLButtonElement).style.opacity = "0.85";
+                  }}
                 >
-                  Sign Out
+                  <LogOut size={14} />
+                  Sign out
                 </button>
               </div>
-            </div>
+            )}
           </div>
         ) : (
-          <div className="flex items-center gap-2">
+          <div style={{ display: "flex", gap: 8 }}>
             <Link
               href="/login"
-              className="text-xs font-bold text-white/80 hover:text-white px-3 py-1.5 transition-colors"
+              style={{
+                padding: "7px 16px",
+                borderRadius: 99,
+                fontSize: 13,
+                color: "var(--ek-text-secondary)",
+                border: "1px solid transparent",
+                transition: "color 0.15s ease",
+                letterSpacing: "-0.01em",
+              }}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "var(--ek-text-primary)")}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "var(--ek-text-secondary)")}
             >
-              Sign In
+              Sign in
             </Link>
             <Link
               href="/register"
-              className="text-xs font-bold bg-ekoro-blue hover:bg-ekoro-blue/90 text-white px-4 py-1.5 rounded-full transition-all shadow-sm"
+              style={{
+                padding: "7px 18px",
+                borderRadius: 99,
+                fontSize: 13,
+                fontWeight: 500,
+                color: "#0f0f0f",
+                background: "var(--ek-gold)",
+                transition: "all 0.15s ease",
+                letterSpacing: "-0.01em",
+              }}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.background = "#d4af5a")}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.background = "var(--ek-gold)")}
             >
-              Sign Up
+              Get started
             </Link>
           </div>
         )}
       </div>
-    </nav>
+    </header>
   );
 }
