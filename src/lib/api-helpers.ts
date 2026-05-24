@@ -33,17 +33,19 @@ export class ApiError extends Error {
 export function handleApiError(error: any): NextResponse<ApiErrorResponse> {
   logger.error("API route execution failed", error);
 
-  if (error instanceof ApiError) {
+  const isApiError = error instanceof ApiError || (error && typeof error === "object" && (error.name === "ApiError" || "statusCode" in error));
+
+  if (isApiError) {
     return NextResponse.json(
       {
         success: false,
         error: {
-          code: error.code,
+          code: error.code || "API_ERROR",
           message: error.message,
           details: error.details,
         },
       },
-      { status: error.statusCode }
+      { status: error.statusCode || 500 }
     );
   }
 
