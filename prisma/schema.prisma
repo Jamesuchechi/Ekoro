@@ -66,6 +66,7 @@ model User {
   tipsSent      Tip[]            @relation("TipsSent")
   tipsReceived  Tip[]            @relation("TipsReceived")
   playEvents    PlayEvent[]
+  playlistFollows PlaylistFollow[]
 
   @@map("users")
 }
@@ -153,6 +154,7 @@ model Playlist {
   // Relationships
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   playlistTracks PlaylistTrack[]
+  follows        PlaylistFollow[]
 
   @@map("playlists")
 }
@@ -270,4 +272,16 @@ model PlayEvent {
   @@index([trackId])
   @@index([playedAt])
   @@map("play_events")
+}
+
+model PlaylistFollow {
+  playlistId String   @map("playlist_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([playlistId, userId])
+  @@map("playlist_follows")
 }

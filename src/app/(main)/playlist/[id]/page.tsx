@@ -1,16 +1,55 @@
 import React from "react";
+import { notFound } from "next/navigation";
+import { PlaylistService } from "@/services/PlaylistService";
+import { getSessionProfile } from "@/lib/auth-helpers";
+import { prisma } from "@/lib/prisma";
+import PlaylistDetailClient from "@/components/Playlist/PlaylistDetailClient";
+import { Lock } from "lucide-react";
 
-export default function PlaylistPage({ params }: { params: { id: string } }) {
+export default async function PlaylistPage({ params }: { params: { id: string } }) {
+  const playlist = await PlaylistService.getPlaylist(params.id);
+  const currentUser = await getSessionProfile();
+
+  if (!playlist) {
+    notFound();
+  }
+
+  const isOwner = currentUser?.id === playlist.userId;
+
+  // Security check: If playlist is private and user is not the owner
+  if (!playlist.isPublic && !isOwner) {
+    return (
+      <div className="p-6 max-w-5xl mx-auto space-y-6 flex flex-col items-center justify-center min-h-[60vh] text-center">
+        <div className="w-16 h-16 rounded-full bg-ek-red/10 border border-ek-red/20 flex items-center justify-center text-ek-red mb-4">
+          <Lock size={24} />
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight text-white">Private Playlist</h1>
+        <p className="text-sm text-ek-text-secondary max-w-sm">
+          This playlist is set to private and can only be viewed by its owner.
+        </p>
+      </div>
+    );
+  }
+
+  // Check if current user is following the playlist
+  let isFollowing = false;
+  if (currentUser) {
+    const follow = await prisma.playlistFollow.findUnique({
+      where: {
+        playlistId_userId: {
+          playlistId: playlist.id,
+          userId: currentUser.id,
+        },
+      },
+    });
+    isFollowing = !!follow;
+  }
+
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight text-white">Playlist</h1>
-        <p className="text-sm text-white/60">Viewing playlist details for ID: {params.id}</p>
-      </div>
-
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center text-white/40 text-sm">
-        This playlist is empty or currently private.
-      </div>
-    </div>
+    <PlaylistDetailClient
+      playlist={playlist}
+      currentUser={currentUser}
+      isFollowing={isFollowing}
+    />
   );
 }

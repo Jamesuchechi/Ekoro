@@ -6,6 +6,8 @@ import { Play, Pause, Heart } from "lucide-react";
 import { Track } from "@/types";
 import { usePlayerStore } from "@/stores/playerStore";
 
+import AddToPlaylistDropdown from "../Playlist/AddToPlaylistDropdown";
+
 interface TrackCardProps {
   track: Track;
 }
@@ -36,7 +38,7 @@ export default function TrackCard({ track }: TrackCardProps) {
       className="group relative bg-ekoro-dark-paper border border-white/5 hover:border-white/15 rounded-xl p-3 cursor-pointer transition-all hover:shadow-lg hover:shadow-black/20"
     >
       <div
-        className={`aspect-square w-full rounded-lg bg-gradient-to-br ${track.color || "from-slate-800 to-slate-900"} flex items-center justify-center text-4xl shadow-inner relative overflow-hidden`}
+        className="aspect-square w-full rounded-lg bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center text-4xl shadow-inner relative overflow-hidden"
       >
         {track.cover || track.coverArtUrl ? (
           <Image
@@ -72,7 +74,7 @@ export default function TrackCard({ track }: TrackCardProps) {
           <span className="text-3xs font-medium text-white/40 flex items-center gap-1">
             <Play className="w-2.5 h-2.5 fill-current" /> {track.plays}
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <span className="text-4xs px-2 py-0.5 bg-white/5 border border-white/10 rounded-full font-bold text-white/60">
               {track.genre}
             </span>
@@ -84,6 +86,7 @@ export default function TrackCard({ track }: TrackCardProps) {
             >
               <Heart className="w-3.5 h-3.5 fill-current" />
             </button>
+            <AddToPlaylistDropdown trackId={track.id} />
           </div>
         </div>
       </div>

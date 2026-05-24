@@ -224,18 +224,18 @@
 
 ### 2.2 Playlists
 
-- [ ] 🔴 Create playlist table with Supabase Row Level Security (RLS) policies
-- [ ] 🔴 Fetch playlist details and track lists from database
-- [ ] 🔴 Server Action / SDK call to update name, description, cover art (with upload to Storage)
-- [ ] 🔴 Server Action / SDK call to delete playlist
-- [ ] 🔴 Server Action / SDK call to add track to playlist
-- [ ] 🔴 Server Action / SDK call to remove track from playlist
-- [ ] 🔴 Server Action / SDK call to reorder tracks in playlist
-- [ ] 🔴 Frontend: playlist creation modal
-- [ ] 🔴 Frontend: playlist detail page
-- [ ] 🔴 Frontend: "Add to playlist" dropdown on track actions menu
-- [ ] 🟡 Frontend: playlist cover art auto-generated from first 4 track covers (collage)
-- [ ] 🟢 Follow a public playlist (creates link record in database)
+- [x] 🔴 Create playlist table with Supabase Row Level Security (RLS) policies
+- [x] 🔴 Fetch playlist details and track lists from database
+- [x] 🔴 Server Action / SDK call to update name, description, cover art (with upload to Storage)
+- [x] 🔴 Server Action / SDK call to delete playlist
+- [x] 🔴 Server Action / SDK call to add track to playlist
+- [x] 🔴 Server Action / SDK call to remove track from playlist
+- [x] 🔴 Server Action / SDK call to reorder tracks in playlist
+- [x] 🔴 Frontend: playlist creation modal
+- [x] 🔴 Frontend: playlist detail page
+- [x] 🔴 Frontend: "Add to playlist" dropdown on track actions menu
+- [x] 🟡 Frontend: playlist cover art auto-generated from first 4 track covers (collage)
+- [x] 🟢 Follow a public playlist (creates link record in database)
 
 ### 2.3 Artist Profiles
 

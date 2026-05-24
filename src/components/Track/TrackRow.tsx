@@ -6,6 +6,8 @@ import { Heart } from "lucide-react";
 import { Track } from "@/types";
 import { usePlayerStore } from "@/stores/playerStore";
 
+import AddToPlaylistDropdown from "../Playlist/AddToPlaylistDropdown";
+
 interface TrackRowProps {
   track: Track;
   index: number;
@@ -71,14 +73,17 @@ export default function TrackRow({ track, index }: TrackRowProps) {
           ▲ +12%
         </p>
       </div>
-      <button
-        onClick={handleLikeClick}
-        className={`hover:scale-115 transition-transform ml-2 ${
-          isLiked ? "text-red-500" : "text-white/40 hover:text-white"
-        }`}
-      >
-        <Heart className="w-3.5 h-3.5 fill-current" />
-      </button>
+      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+        <button
+          onClick={handleLikeClick}
+          className={`hover:scale-115 transition-transform ${
+            isLiked ? "text-red-500" : "text-white/40 hover:text-white"
+          }`}
+        >
+          <Heart className="w-3.5 h-3.5 fill-current" />
+        </button>
+        <AddToPlaylistDropdown trackId={track.id} />
+      </div>
     </div>
   );
 }
