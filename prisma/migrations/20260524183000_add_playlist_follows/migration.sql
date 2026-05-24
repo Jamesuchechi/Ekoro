@@ -1,5 +1,5 @@
--- CreateTable
-CREATE TABLE "playlist_follows" (
+-- CreateTable (idempotent)
+CREATE TABLE IF NOT EXISTS "playlist_follows" (
     "playlist_id" UUID NOT NULL,
     "user_id" UUID NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -7,21 +7,37 @@ CREATE TABLE "playlist_follows" (
     CONSTRAINT "playlist_follows_pkey" PRIMARY KEY ("playlist_id","user_id")
 );
 
--- AddForeignKey
-ALTER TABLE "playlist_follows" ADD CONSTRAINT "playlist_follows_playlist_id_fkey" FOREIGN KEY ("playlist_id") REFERENCES "playlists"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+-- AddForeignKey (idempotent)
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'playlist_follows_playlist_id_fkey'
+  ) THEN
+    ALTER TABLE "playlist_follows" ADD CONSTRAINT "playlist_follows_playlist_id_fkey"
+      FOREIGN KEY ("playlist_id") REFERENCES "playlists"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
--- AddForeignKey
-ALTER TABLE "playlist_follows" ADD CONSTRAINT "playlist_follows_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'playlist_follows_user_id_fkey'
+  ) THEN
+    ALTER TABLE "playlist_follows" ADD CONSTRAINT "playlist_follows_user_id_fkey"
+      FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
--- Enable Row Level Security
+-- Enable Row Level Security (idempotent)
 ALTER TABLE "playlist_follows" ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for playlist_follows
+DROP POLICY IF EXISTS "Playlist follows are viewable by everyone" ON "playlist_follows";
 CREATE POLICY "Playlist follows are viewable by everyone" ON "playlist_follows"
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Users can follow playlists" ON "playlist_follows";
 CREATE POLICY "Users can follow playlists" ON "playlist_follows"
   FOR INSERT WITH CHECK (auth.uid() = "user_id");
 
+DROP POLICY IF EXISTS "Users can unfollow playlists" ON "playlist_follows";
 CREATE POLICY "Users can unfollow playlists" ON "playlist_follows"
   FOR DELETE USING (auth.uid() = "user_id");
