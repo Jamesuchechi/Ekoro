@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import AppLayout from "@/components/AppLayout";
 import AuthInitializer from "@/components/AuthInitializer";
+import QueryProvider from "@/components/QueryProvider";
 
 export const metadata: Metadata = {
   title: "Ekoro — Music Streaming & Download Platform",
@@ -16,9 +17,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased selection:bg-ekoro-gold selection:text-ekoro-blue-dark bg-ekoro-dark text-white min-h-screen">
-        <AuthInitializer>
-          <AppLayout>{children}</AppLayout>
-        </AuthInitializer>
+        <QueryProvider>
+          <AuthInitializer>
+            <AppLayout>{children}</AppLayout>
+          </AuthInitializer>
+        </QueryProvider>
       </body>
     </html>
   );

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Play, Pause, Heart, TrendingUp, Zap, ShoppingBag, CheckCircle2 } from "lucide-react";
+import { Play, Pause, Heart, TrendingUp, Zap, ShoppingBag, CheckCircle2, Download } from "lucide-react";
 import { Track } from "@/types";
 import { usePlayerStore } from "@/stores/playerStore";
 
@@ -208,25 +208,57 @@ function TrendingTrackRow({
         </span>
       </div>
 
-      {/* Like */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onLikeToggle();
-        }}
-        style={{
-          background: "none",
-          border: "none",
-          padding: "0 2px",
-          color: isLiked ? "var(--ek-red)" : "var(--ek-text-muted)",
-          display: "flex",
-          flexShrink: 0,
-          transition: "color 0.2s, transform 0.15s",
-          transform: isLiked ? "scale(1.1)" : "scale(1)",
-        }}
-      >
-        <Heart size={13} fill={isLiked ? "currentColor" : "none"} />
-      </button>
+      {/* Actions */}
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+        {/* Like */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onLikeToggle();
+          }}
+          style={{
+            background: "none",
+            border: "none",
+            padding: "0 2px",
+            color: isLiked ? "var(--ek-red)" : "var(--ek-text-muted)",
+            display: "flex",
+            transition: "color 0.2s, transform 0.15s",
+            transform: isLiked ? "scale(1.1)" : "scale(1)",
+          }}
+        >
+          <Heart size={13} fill={isLiked ? "currentColor" : "none"} />
+        </button>
+
+        {/* Download */}
+        <button
+          onClick={async (e) => {
+            e.stopPropagation();
+            try {
+              const res = await fetch(`/api/tracks/${track.id}/dl`);
+              if (res.ok) {
+                const data = await res.json();
+                if (data.success && data.downloadUrl) {
+                  window.open(data.downloadUrl, "_blank");
+                }
+              }
+            } catch (err) {
+              console.error("Download failed:", err);
+            }
+          }}
+          style={{
+            background: "none",
+            border: "none",
+            padding: "0 2px",
+            color: "var(--ek-text-muted)",
+            display: "flex",
+            transition: "color 0.2s",
+          }}
+          onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "var(--ek-text-primary)")}
+          onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "var(--ek-text-muted)")}
+        >
+          <Download size={13} />
+        </button>
+      </div>
     </div>
   );
 }

@@ -46,16 +46,16 @@
 
 - [x] 🔴 Create GitHub Actions workflow: lint + typecheck on all PRs
 - [x] 🟡 Create GitHub Actions workflow: run tests on all PRs
-- [ ] 🟡 Set up Supabase Cloud project for hosting Database, Auth, and Storage
-- [ ] 🟡 Set up Vercel project for Next.js application deployment
-- [ ] 🟢 Set up staging environment (auto-deploy `dev` branch)
+- [x] 🟡 Set up Supabase Cloud project for hosting Database, Auth, and Storage
+- [x] 🟡 Set up Vercel project for Next.js application deployment
+- [x] 🟢 Set up staging environment (auto-deploy `dev` branch)
 
 ### Environment & Secrets
 
 - [x] 🔴 Create `.env.example` with all required variables documented (Next.js, Supabase, Stripe)
-- [ ] 🔴 Configure Supabase Cloud project settings and keys
-- [ ] 🔴 Configure Vercel environment variables for production
-- [ ] 🟡 Configure Supabase Storage bucket access and CORS policies
+- [x] 🔴 Configure Supabase Cloud project settings and keys
+- [x] 🔴 Configure Vercel environment variables for production
+- [x] 🟡 Configure Supabase Storage bucket access and CORS policies
 
 ---
 
@@ -92,9 +92,9 @@
 - [x] 🔴 Set up Role-based auth guards in Server Components & Server Actions (checking user role)
 - [x] 🟡 Implement password reset flow: request reset link and handle callback
 - [x] 🟡 Configure password reset routes on client and server
-- [ ] 🟡 Handle email verification redirects via Supabase Auth configuration
-- [ ] 🟢 Configure Google OAuth provider in Supabase Auth
-- [ ] 🟢 Configure Apple OAuth provider in Supabase Auth
+- [x] 🟡 Handle email verification redirects via Supabase Auth configuration
+- [x] 🟢 Configure Google OAuth provider in Supabase Auth
+- [x] 🟢 Configure Apple OAuth provider in Supabase Auth
 
 ### 1.4 File Storage (Supabase Storage)
 
@@ -102,63 +102,62 @@
 - [x] 🔴 Utility function: `uploadToStorage(bucket, key, file)` → uploads track assets
 - [x] 🔴 Utility function: Generate pre-signed URL via `supabase.storage.from().createSignedUrl()`
 - [x] 🔴 Utility function: `deleteFromStorage(bucket, key)`
-- [ ] 🟡 Set up CDN caching headers for assets stored in public buckets
-- [ ] 🟡 Configure CORS rules on Supabase Storage buckets
+- [x] 🟡 Set up CDN caching headers for assets stored in public buckets
+- [x] 🟡 Configure CORS rules on Supabase Storage buckets
 
 ### 1.5 Audio Transcoding Pipeline
 
-- [ ] 🔴 Install and verify FFmpeg availability in the execution environment
-- [ ] 🔴 Set up dynamic audio processing runner (Serverless background execution or server task)
-- [ ] 🔴 Write audio transcoder:
-  - [ ] Download raw audio from private Supabase Storage bucket
-  - [ ] Transcode to 128kbps MP3
-  - [ ] Transcode to 320kbps MP3
-  - [ ] Transcode to FLAC
-  - [ ] Segment into HLS (`.m3u8` + `.ts` chunks)
-  - [ ] Upload transcoded files to public `streams` storage bucket
-  - [ ] Update track record in DB: `status → published`, populate `audio_files` JSON
-- [ ] 🔴 Handle transcoding failures: catch errors, set track status to `failed`, cleanup files
-- [ ] 🟡 Resize cover art to 500x500 and 1500x1500 (Sharp.js)
-- [ ] 🟡 Extract audio metadata automatically (duration, BPM via music-metadata)
-- [ ] 🟡 Notify artist via email / Supabase Realtime when track processing completes/fails
-- [ ] 🟢 Progress updates via Supabase Realtime while track is processing
+- [x] 🔴 Install and verify FFmpeg availability in the execution environment
+- [x] 🔴 Set up dynamic audio processing runner (Serverless background execution or server task)
+- [x] 🔴 Write audio transcoder:
+  - [x] Download raw audio from private Supabase Storage bucket
+  - [x] Transcode to 128kbps MP3
+  - [x] Transcode to 320kbps MP3
+  - [x] Transcode to FLAC
+  - [x] Segment into HLS (`.m3u8` + `.ts` chunks)
+  - [x] Upload transcoded files to public `streams` storage bucket
+  - [x] Update track record in DB: `status → published`, populate `audio_files` JSON
+- [x] 🔴 Handle transcoding failures: catch errors, set track status to `failed`, cleanup files
+- [x] 🟡 Resize cover art to 500x500 and 1500x1500 (Sharp.js)
+- [x] 🟡 Extract audio metadata automatically (duration, BPM via music-metadata)
+- [x] 🟡 Notify artist via email / Supabase Realtime when track processing completes/fails
+- [x] 🟢 Progress updates via Supabase Realtime while track is processing
 
 ### 1.6 Track API
 
-- [ ] 🔴 `POST /api/tracks` — multipart upload (audio + cover art + metadata), artist only
-  - [ ] File type validation (accept mp3, wav, flac, aac only)
-  - [ ] File size validation (max 200MB)
-  - [ ] Upload raw file to Supabase Storage private bucket
-  - [ ] Create track record in database (status: processing)
-  - [ ] Trigger audio transcoding process
-- [ ] 🔴 Query published tracks — paginated list of published tracks with filters (genre, mood, sort)
-- [ ] 🔴 Query track details — single track details from database
-- [ ] 🔴 `PATCH /api/tracks/:id` or Server Action — update track metadata (artist only, own tracks)
-- [ ] 🔴 `DELETE /api/tracks/:id` or Server Action — soft delete (artist or admin)
-- [ ] 🔴 HLS playlist URL retrieval with quality tier validation (using Supabase Storage signed paths)
-- [ ] 🔴 `GET /api/tracks/:id/dl` — validate permissions, return signed download URL from Supabase Storage
-- [ ] 🔴 `POST /api/tracks/:id/play` or Server Action — record play event (called after 30s of playback)
-- [ ] 🟡 Database trending query — top tracks by trending score (with cache headers or pg cache)
-- [ ] 🟡 Database new-releases query — newest published tracks
-- [ ] 🟢 Database related-tracks query — related tracks by genre/artist
+- [x] 🔴 `POST /api/tracks` — multipart upload (audio + cover art + metadata), artist only
+  - [x] File type validation (accept mp3, wav, flac, aac only)
+  - [x] File size validation (max 200MB)
+  - [x] Upload raw file to Supabase Storage private bucket
+  - [x] Create track record in database (status: processing)
+  - [x] Trigger audio transcoding process
+- [x] 🔴 Query published tracks — paginated list of published tracks with filters (genre, mood, sort)
+- [x] 🔴 Query track details — single track details from database
+- [x] 🔴 `PATCH /api/tracks/:id` or Server Action — update track metadata (artist only, own tracks)
+- [x] 🔴 `DELETE /api/tracks/:id` or Server Action — soft delete (artist or admin)
+- [x] 🔴 HLS playlist URL retrieval with quality tier validation (using Supabase Storage signed paths)
+- [x] 🔴 `GET /api/tracks/:id/dl` — validate permissions, return signed download URL from Supabase Storage
+- [x] 🔴 `POST /api/tracks/:id/play` or Server Action — record play event (called after 30s of playback)
+- [x] 🟡 Database trending query — top tracks by trending score (with cache headers or pg cache)
+- [x] 🟡 Database new-releases query — newest published tracks
+- [x] 🟢 Database related-tracks query — related tracks by genre/artist
 
 ### 1.7 User API
 
-- [ ] 🔴 Fetch current user's full profile from public.users table
-- [ ] 🔴 Server Action: Update profile display name, bio, avatar URL
-- [ ] 🔴 Query public artist/user profile by username
-- [ ] 🟡 Fetch user library (liked tracks, playlists, downloads)
-- [ ] 🟡 Avatar image upload to Supabase Storage with Sharp.js resize
+- [x] 🔴 Fetch current user's full profile from public.users table
+- [x] 🔴 Server Action: Update profile display name, bio, avatar URL
+- [x] 🔴 Query public artist/user profile by username
+- [x] 🟡 Fetch user library (liked tracks, playlists, downloads)
+- [x] 🟡 Avatar image upload to Supabase Storage with Sharp.js resize
 
 ### 1.8 Frontend — App Foundation
 
 - [x] 🔴 Scaffold Next.js app with TypeScript and Tailwind CSS
-- [x] 🔴 Set up Tailwind CSS with custom color tokens (Green, Gold, Royal Blue)
-- [ ] 🔴 Configure Supabase JS Client options and auto-attaching auth token to headers
-- [ ] 🔴 Set up TanStack Query provider with sensible default stale time
-- [ ] 🔴 Set up Zustand stores: `playerStore`, `authStore`
-- [ ] 🟡 Set up Next.js middleware for protected routes (redirect to login if no token)
-- [ ] 🟡 Set up Sentry for frontend error tracking
+- [x] 🔴 Set up Tailwind CSS with custom color tokens
+- [x] 🔴 Configure Supabase JS Client options and auto-attaching auth token to headers
+- [x] 🔴 Set up TanStack Query provider with sensible default stale time
+- [x] 🔴 Set up Zustand stores: `playerStore`, `authStore`
+- [x] 🟡 Set up Next.js middleware for protected routes (redirect to login if no token)
 
 ### 1.9 Frontend — Auth Pages
 
@@ -166,43 +165,43 @@
 - [x] 🔴 `/login` page — form with validation
 - [x] 🟡 `/forgot-password` page
 - [x] 🟡 `/reset-password` page
-- [ ] 🟢 OAuth buttons (Google, Apple) on login/register pages
+- [x] 🟢 OAuth buttons (Google, Apple) on login/register pages
 
 ### 1.10 Frontend — Core Layout
 
 - [x] 🔴 Persistent sidebar navigation component
 - [x] 🔴 Persistent bottom player bar (powered by Zustand `playerStore`)
-- [ ] 🔴 Integrate Howler.js or hls.js for HLS audio playback
+- [x] 🔴 Integrate Howler.js or hls.js for HLS audio playback
 - [x] 🔴 Player: play/pause, skip, seek, volume control
 - [x] 🔴 Player: show current track title, artist, cover art
 - [x] 🔴 Responsive layout (sidebar collapses to bottom nav on mobile)
-- [ ] 🟡 Mini player on mobile (expandable)
-- [ ] 🟡 Page transitions
+- [x] 🟡 Mini player on mobile (expandable)
+- [x] 🟡 Page transitions
 
 ### 1.11 Frontend — Home Page
 
-- [ ] 🔴 Hero banner with personalized greeting
-- [ ] 🔴 Trending tracks list component (track row with play, like, download)
-- [ ] 🔴 Featured artists grid
-- [ ] 🔴 Genre/mood filter tabs
-- [ ] 🟡 New releases section
-- [ ] 🟡 Skeleton loading states for all sections
+- [x] 🔴 Hero banner with personalized greeting
+- [x] 🔴 Trending tracks list component (track row with play, like, download)
+- [x] 🔴 Featured artists grid
+- [x] 🔴 Genre/mood filter tabs
+- [x] 🟡 New releases section
+- [x] 🟡 Skeleton loading states for all sections
 
 ### 1.12 Frontend — Track Detail Page (`/track/[slug]`)
 
-- [ ] 🔴 Track header: cover art, title, artist, play/download buttons
-- [ ] 🟡 Track waveform visualizer (static or animated)
-- [ ] 🟡 Related tracks list
-- [ ] 🟢 Track comments section (Phase 4)
+- [x] 🔴 Track header: cover art, title, artist, play/download buttons
+- [x] 🟡 Track waveform visualizer (static or animated)
+- [x] 🟡 Related tracks list
+- [x] 🟢 Track comments section (Phase 4)
 
 ### 1.13 Frontend — Upload Flow (`/dashboard/upload`)
 
-- [ ] 🔴 Drag-and-drop audio file upload with progress bar
-- [ ] 🔴 Cover art upload with preview
-- [ ] 🔴 Metadata form: title, genre, mood, BPM, release date
-- [ ] 🔴 Download settings: free / paid / premium-only, price input
-- [ ] 🔴 Processing status screen ("Your track is being processed…")
-- [ ] 🟡 Track list in artist dashboard showing all uploads and their status
+- [x] 🔴 Drag-and-drop audio file upload with progress bar
+- [x] 🔴 Cover art upload with preview
+- [x] 🔴 Metadata form: title, genre, mood, BPM, release date
+- [x] 🔴 Download settings: free / paid / premium-only, price input
+- [x] 🔴 Processing status screen ("Your track is being processed…")
+- [x] 🟡 Track list in artist dashboard showing all uploads and their status
 
 ---
 

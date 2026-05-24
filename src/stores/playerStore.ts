@@ -4,6 +4,7 @@ import { Track } from "@/types";
 interface PlayerState {
   currentTrack: Track | null;
   isPlaying: boolean;
+  isBuffering: boolean;
   volume: number;
   progress: number;
   currentTime: number;
@@ -11,6 +12,7 @@ interface PlayerState {
   setTrack: (track: Track) => void;
   togglePlay: () => void;
   setIsPlaying: (isPlaying: boolean) => void;
+  setIsBuffering: (isBuffering: boolean) => void;
   setVolume: (volume: number) => void;
   setProgress: (progress: number) => void;
   setCurrentTime: (currentTime: number) => void;
@@ -29,6 +31,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
     duration: "3:38",
   }, // Initialize with default track
   isPlaying: false,
+  isBuffering: false,
   volume: 75,
   progress: 38,
   currentTime: 84,
@@ -37,11 +40,13 @@ export const usePlayerStore = create<PlayerState>((set) => ({
     set({
       currentTrack: track,
       isPlaying: true,
+      isBuffering: true, // Auto-buffer on track change
       progress: 0,
       currentTime: 0,
     }),
   togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
   setIsPlaying: (isPlaying) => set({ isPlaying }),
+  setIsBuffering: (isBuffering) => set({ isBuffering }),
   setVolume: (volume) => set({ volume }),
   setProgress: (progress) => set({ progress }),
   setCurrentTime: (currentTime) => set({ currentTime }),

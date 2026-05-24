@@ -1,12 +1,110 @@
 import React from "react";
+import { notFound } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import TrackDetailsClient from "@/components/track/TrackDetailsClient";
 
-export default function TrackPage({ params }: { params: { slug: string } }) {
+interface PageProps {
+  params: {
+    slug: string;
+  };
+}
+
+/**
+ * Generate dynamic SEO Metadata
+ */
+export async function generateMetadata({ params }: PageProps) {
+  try {
+    const track = await prisma.track.findUnique({
+      where: { slug: params.slug },
+      include: {
+        artist: {
+          select: {
+            displayName: true,
+            username: true,
+          },
+        },
+      },
+    });
+
+    if (!track) {
+      return {
+        title: "Track Not Found | Ekoro",
+        description: "The requested track could not be found on Ekoro.",
+      };
+    }
+
+    const artistName = track.artist.displayName || track.artist.username;
+    return {
+      title: `${track.title} by ${artistName} | Ekoro`,
+      description: `Listen to and support ${artistName}'s track "${track.title}" on Ekoro. Direct fan-to-artist connection and lossless streams.`,
+    };
+  } catch (error) {
+    return {
+      title: "Ekoro Music",
+    };
+  }
+}
+
+export default async function TrackPage({ params }: PageProps) {
+  const { slug } = params;
+
+  // 1. Fetch Track details from DB
+  const track = await prisma.track.findUnique({
+    where: { slug },
+    include: {
+      artist: {
+        select: {
+          id: true,
+          username: true,
+          displayName: true,
+          avatarUrl: true,
+          bio: true,
+        },
+      },
+    },
+  });
+
+  if (!track || track.status === "removed") {
+    notFound();
+  }
+
+  // 2. Fetch related tracks (same genre, exclude current track)
+  const relatedTracks = await prisma.track.findMany({
+    where: {
+      status: "published",
+      genre: track.genre,
+      id: { not: track.id },
+    },
+    take: 5,
+    include: {
+      artist: {
+        select: {
+          id: true,
+          username: true,
+          displayName: true,
+          avatarUrl: true,
+        },
+      },
+    },
+  });
+
+  // Convert BigInt values to string representation for serialization
+  const serializedTrack = {
+    ...track,
+    playCount: track.playCount.toString(),
+    downloadCount: track.downloadCount.toString(),
+  };
+
+  const serializedRelatedTracks = relatedTracks.map((relTrack) => ({
+    ...relTrack,
+    playCount: relTrack.playCount.toString(),
+    downloadCount: relTrack.downloadCount.toString(),
+  }));
+
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight text-white">Track</h1>
-        <p className="text-sm text-white/60">Viewing track info for: {params.slug}</p>
-      </div>
-    </div>
+    <TrackDetailsClient
+      track={serializedTrack}
+      relatedTracks={serializedRelatedTracks}
+    />
   );
 }

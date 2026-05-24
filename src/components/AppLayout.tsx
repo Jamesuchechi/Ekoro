@@ -73,7 +73,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             scrollbarColor: "var(--ek-border-mid) transparent",
           }}
         >
-          {children}
+          <div key={pathname} className="animate-page">
+            {children}
+          </div>
         </main>
       </div>
 

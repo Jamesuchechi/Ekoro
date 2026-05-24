@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Play, Pause, Radio, Users, ChevronRight, Disc3 } from "lucide-react";
 import { Track } from "@/types";
 import { usePlayerStore } from "@/stores/playerStore";
+import { useAuthStore } from "@/stores/authStore";
 
 interface HeroSectionProps {
   featuredTrack?: Track;
@@ -14,6 +15,7 @@ const LISTENER_COUNT = 2847;
 
 export default function HeroSection({ featuredTrack }: HeroSectionProps) {
   const { currentTrack, isPlaying, setTrack, togglePlay } = usePlayerStore();
+  const { user, profile } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [listeners, setListeners] = useState(LISTENER_COUNT);
 
@@ -24,6 +26,20 @@ export default function HeroSection({ featuredTrack }: HeroSectionProps) {
     }, 4000);
     return () => clearInterval(interval);
   }, []);
+
+  const getPersonalizedGreeting = () => {
+    const hr = new Date().getHours();
+    let timeOfDay = "day";
+    if (hr < 12) timeOfDay = "morning";
+    else if (hr < 17) timeOfDay = "afternoon";
+    else timeOfDay = "evening";
+
+    if (user) {
+      const name = profile?.displayName || user.email?.split("@")[0] || "music lover";
+      return `Good ${timeOfDay}, ${name}`;
+    }
+    return "Welcome to Ekoro";
+  };
 
   const handlePlay = () => {
     if (!featuredTrack) return;
@@ -142,6 +158,24 @@ export default function HeroSection({ featuredTrack }: HeroSectionProps) {
               {listeners.toLocaleString()}
             </span>
           </div>
+
+          {/* Personalized Greeting */}
+          {mounted && (
+            <div
+              style={{
+                fontSize: 12,
+                fontWeight: 500,
+                color: "var(--ek-gold)",
+                fontFamily: "var(--font-mono)",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                marginBottom: 12,
+                animation: "fadeIn 0.6s ease forwards",
+              }}
+            >
+              {getPersonalizedGreeting()}
+            </div>
+          )}
 
           {/* Headline */}
           <h1

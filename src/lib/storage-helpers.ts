@@ -7,12 +7,20 @@ export async function uploadToStorage(
   bucket: string,
   key: string,
   file: Blob | Buffer | ArrayBuffer,
-  contentType?: string
+  contentType?: string,
+  cacheControl?: string
 ) {
   const supabase = createClient();
+  
+  // Apply a standard 1-year CDN caching policy for public assets (covers, avatars, streams) by default
+  const defaultCacheControl = ["covers", "avatars", "streams"].includes(bucket)
+    ? "public, max-age=31536000, immutable"
+    : undefined;
+
   const { data, error } = await supabase.storage.from(bucket).upload(key, file, {
     contentType,
     upsert: true,
+    cacheControl: cacheControl ?? defaultCacheControl,
   });
 
   if (error) {
