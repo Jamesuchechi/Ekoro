@@ -212,15 +212,15 @@
 
 ### 2.1 Search
 
-- [ ] 🔴 Configure PostgreSQL Full-Text Search (TSVector) for tracks, artists, and playlists in database
-- [ ] 🔴 Set up pg_trgm extension on Supabase PostgreSQL for fuzzy matching
-- [ ] 🔴 Write search query in Next.js Server Actions using Prisma or Supabase clients
-- [ ] 🔴 `GET /api/search?q=&type=&genre=` endpoint (optional, or Server Action search query)
-- [ ] 🔴 Frontend: search bar with autocomplete suggestions
-- [ ] 🔴 Frontend: search results page with tabs (Tracks, Artists, Playlists)
-- [ ] 🟡 Add database indexes on search fields for performance
-- [ ] 🟡 Genre/mood browse page with grid of tracks
-- [ ] 🟢 Typo-tolerance matching via pg_trgm similarity thresholds
+- [x] 🔴 Configure PostgreSQL Full-Text Search (TSVector) for tracks, artists, and playlists in database
+- [x] 🔴 Set up pg_trgm extension on Supabase PostgreSQL for fuzzy matching
+- [x] 🔴 Write search query in Next.js Server Actions using Prisma or Supabase clients
+- [x] 🔴 `GET /api/search?q=&type=&genre=` endpoint (optional, or Server Action search query)
+- [x] 🔴 Frontend: search bar with autocomplete suggestions
+- [x] 🔴 Frontend: search results page with tabs (Tracks, Artists, Playlists)
+- [x] 🟡 Add database indexes on search fields for performance
+- [x] 🟡 Genre/mood browse page with grid of tracks
+- [x] 🟢 Typo-tolerance matching via pg_trgm similarity thresholds
 
 ### 2.2 Playlists
 

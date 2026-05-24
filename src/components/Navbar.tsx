@@ -22,13 +22,60 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<any>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const searchRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Click outside to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Fetch search suggestions with debouncing
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSuggestions(null);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery.trim())}&limit=3`);
+        if (res.ok) {
+          const data = await res.json();
+          setSuggestions(data);
+          setShowSuggestions(true);
+        }
+      } catch (err) {
+        console.error("Suggestions fetch error:", err);
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/explore?q=${encodeURIComponent(searchQuery.trim())}`);
+      setShowSuggestions(false);
+      setSearchOpen(false);
+    }
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -137,65 +184,218 @@ export default function Navbar() {
       {/* Right side */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
         {/* Search */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            background: searchOpen ? "var(--ek-surface)" : "transparent",
-            border: `1px solid ${searchOpen ? "var(--ek-border-hi)" : "var(--ek-border)"}`,
-            borderRadius: 99,
-            padding: searchOpen ? "6px 14px 6px 12px" : "6px 10px",
-            width: searchOpen ? 220 : 36,
-            height: 34,
-            overflow: "hidden",
-            transition: "all 0.25s var(--ease-out-expo)",
-            cursor: searchOpen ? "text" : "pointer",
-          }}
-          onClick={() => !searchOpen && setSearchOpen(true)}
-        >
-          <Search
-            size={14}
+        <div ref={searchRef} style={{ position: "relative" }}>
+          <form
+            onSubmit={handleSearchSubmit}
             style={{
-              color: searchOpen ? "var(--ek-text-secondary)" : "var(--ek-text-muted)",
-              flexShrink: 0,
-              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              background: searchOpen ? "var(--ek-surface)" : "transparent",
+              border: `1px solid ${searchOpen ? "var(--ek-border-hi)" : "var(--ek-border)"}`,
+              borderRadius: 99,
+              padding: searchOpen ? "6px 14px 6px 12px" : "6px 10px",
+              width: searchOpen ? 220 : 36,
+              height: 34,
+              overflow: searchOpen ? "visible" : "hidden",
+              transition: "all 0.25s var(--ease-out-expo)",
+              cursor: searchOpen ? "text" : "pointer",
             }}
-          />
-          {searchOpen && (
-            <>
-              <input
-                autoFocus
-                type="text"
-                placeholder="Search tracks, artists…"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Escape" && setSearchOpen(false)}
-                style={{
-                  flex: 1,
-                  background: "transparent",
-                  border: "none",
-                  outline: "none",
-                  fontSize: 13,
-                  color: "var(--ek-text-primary)",
-                  fontFamily: "var(--font-body)",
-                }}
-              />
-              <button
-                onClick={(e) => { e.stopPropagation(); setSearchOpen(false); setSearchQuery(""); }}
-                style={{
-                  background: "none",
-                  border: "none",
-                  padding: 0,
-                  color: "var(--ek-text-muted)",
-                  cursor: "pointer",
-                  display: "flex",
-                  flexShrink: 0,
-                }}
-              >
-                <X size={13} />
-              </button>
-            </>
+            onClick={() => !searchOpen && setSearchOpen(true)}
+          >
+            <Search
+              size={14}
+              style={{
+                color: searchOpen ? "var(--ek-text-secondary)" : "var(--ek-text-muted)",
+                flexShrink: 0,
+                cursor: "pointer",
+              }}
+              onClick={(e) => {
+                if (searchOpen) {
+                  handleSearchSubmit(e);
+                } else {
+                  setSearchOpen(true);
+                }
+              }}
+            />
+            {searchOpen && (
+              <>
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Search tracks, artists…"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onKeyDown={(e) => e.key === "Escape" && setSearchOpen(false)}
+                  style={{
+                    flex: 1,
+                    background: "transparent",
+                    border: "none",
+                    outline: "none",
+                    fontSize: 13,
+                    color: "var(--ek-text-primary)",
+                    fontFamily: "var(--font-body)",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setSearchOpen(false); setSearchQuery(""); }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    color: "var(--ek-text-muted)",
+                    cursor: "pointer",
+                    display: "flex",
+                    flexShrink: 0,
+                  }}
+                >
+                  <X size={13} />
+                </button>
+              </>
+            )}
+          </form>
+
+          {/* Suggestions Dropdown */}
+          {searchOpen && showSuggestions && suggestions && (
+            <div
+              style={{
+                position: "absolute",
+                top: "calc(100% + 8px)",
+                right: 0,
+                width: 320,
+                background: "var(--ek-surface)",
+                border: "1px solid var(--ek-border-mid)",
+                borderRadius: 12,
+                padding: "8px 0",
+                boxShadow: "0 16px 40px rgba(0,0,0,0.6)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+                zIndex: 100,
+                maxHeight: 400,
+                overflowY: "auto",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Tracks suggestions */}
+              {suggestions.tracks && suggestions.tracks.length > 0 ? (
+                <div>
+                  <div style={{ fontSize: 9, fontWeight: 600, color: "var(--ek-text-tertiary)", padding: "4px 12px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Tracks</div>
+                  {suggestions.tracks.map((track: any) => (
+                    <Link
+                      key={track.id}
+                      href={`/track/${track.id}`}
+                      onClick={() => { setShowSuggestions(false); setSearchOpen(false); }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        padding: "6px 12px",
+                        textDecoration: "none",
+                        color: "var(--ek-text-primary)",
+                        transition: "background 0.15s ease",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--ek-raised)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    >
+                      <Image src={track.cover} alt={track.title} width={28} height={28} style={{ borderRadius: 4, objectFit: "cover", flexShrink: 0 }} unoptimized />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{track.title}</div>
+                        <div style={{ fontSize: 10, color: "var(--ek-text-secondary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{track.artist}</div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+
+              {/* Artists suggestions */}
+              {suggestions.artists && suggestions.artists.length > 0 ? (
+                <div>
+                  <div style={{ fontSize: 9, fontWeight: 600, color: "var(--ek-text-tertiary)", padding: "4px 12px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Artists</div>
+                  {suggestions.artists.map((artist: any) => (
+                    <Link
+                      key={artist.id}
+                      href={`/artist/${encodeURIComponent(artist.name)}`}
+                      onClick={() => { setShowSuggestions(false); setSearchOpen(false); }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        padding: "6px 12px",
+                        textDecoration: "none",
+                        color: "var(--ek-text-primary)",
+                        transition: "background 0.15s ease",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--ek-raised)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    >
+                      <Image src={artist.image} alt={artist.name} width={28} height={28} style={{ borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} unoptimized />
+                      <div style={{ fontSize: 12, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{artist.name}</div>
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+
+              {/* Playlists suggestions */}
+              {suggestions.playlists && suggestions.playlists.length > 0 ? (
+                <div>
+                  <div style={{ fontSize: 9, fontWeight: 600, color: "var(--ek-text-tertiary)", padding: "4px 12px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Playlists</div>
+                  {suggestions.playlists.map((playlist: any) => (
+                    <Link
+                      key={playlist.id}
+                      href={`/playlist/${playlist.id}`}
+                      onClick={() => { setShowSuggestions(false); setSearchOpen(false); }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        padding: "6px 12px",
+                        textDecoration: "none",
+                        color: "var(--ek-text-primary)",
+                        transition: "background 0.15s ease",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--ek-raised)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    >
+                      <Image src={playlist.cover} alt={playlist.title} width={28} height={28} style={{ borderRadius: 4, objectFit: "cover", flexShrink: 0 }} unoptimized />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{playlist.title}</div>
+                        <div style={{ fontSize: 10, color: "var(--ek-text-secondary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>by {playlist.creator}</div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+
+              {/* See all trigger */}
+              {((suggestions.tracks && suggestions.tracks.length > 0) ||
+                (suggestions.artists && suggestions.artists.length > 0) ||
+                (suggestions.playlists && suggestions.playlists.length > 0)) && (
+                <div style={{ borderTop: "1px solid var(--ek-border)", marginTop: 4, paddingTop: 4 }}>
+                  <Link
+                    href={`/explore?q=${encodeURIComponent(searchQuery)}`}
+                    onClick={() => { setShowSuggestions(false); setSearchOpen(false); }}
+                    style={{
+                      display: "block",
+                      textAlign: "center",
+                      fontSize: 11,
+                      fontWeight: 500,
+                      color: "var(--ek-gold)",
+                      padding: "6px 12px",
+                      textDecoration: "none",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.textDecoration = "underline")}
+                    onMouseLeave={(e) => (e.currentTarget.style.textDecoration = "none")}
+                  >
+                    See all results for &ldquo;{searchQuery}&rdquo;
+                  </Link>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
