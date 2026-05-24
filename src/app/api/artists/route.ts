@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { SocialService } from "@/services/SocialService";
 import { getSessionProfile } from "@/lib/auth-helpers";
 
+// Always render on-demand — reads query params and session
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;

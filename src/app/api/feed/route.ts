@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionProfile } from "@/lib/auth-helpers";
 import { SocialService } from "@/services/SocialService";
 
+export const dynamic = "force-dynamic";
+
+
 export async function GET(request: NextRequest) {
   try {
     const currentUser = await getSessionProfile();
