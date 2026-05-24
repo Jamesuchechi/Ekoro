@@ -19,9 +19,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         style={{
           minHeight: "100vh",
           background: "var(--ek-void)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          width: "100%",
         }}
       >
         {children}
