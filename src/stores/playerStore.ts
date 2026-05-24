@@ -10,6 +10,8 @@ interface PlayerState {
   progress: number;
   currentTime: number;
   likedTracks: string[];
+  queue: Track[];
+  queueIndex: number;
   setTrack: (track: Track) => void;
   togglePlay: () => void;
   setIsPlaying: (isPlaying: boolean) => void;
@@ -19,6 +21,9 @@ interface PlayerState {
   setCurrentTime: (currentTime: number) => void;
   toggleLikeTrack: (trackId: string) => void;
   setLikedTracks: (likedTracks: string[]) => void;
+  setQueue: (tracks: Track[], startIndex?: number) => void;
+  nextTrack: () => void;
+  prevTrack: () => void;
 }
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
@@ -38,6 +43,8 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   progress: 38,
   currentTime: 84,
   likedTracks: [],
+  queue: [],
+  queueIndex: 0,
   setTrack: (track) =>
     set({
       currentTrack: track,
@@ -84,4 +91,42 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     }
   },
   setLikedTracks: (likedTracks) => set({ likedTracks }),
+  setQueue: (tracks, startIndex = 0) => {
+    if (tracks.length === 0) return;
+    set({
+      queue: tracks,
+      queueIndex: startIndex,
+      currentTrack: tracks[startIndex],
+      isPlaying: true,
+      isBuffering: true,
+      progress: 0,
+      currentTime: 0,
+    });
+  },
+  nextTrack: () => {
+    const { queue, queueIndex } = get();
+    if (queue.length === 0) return;
+    const nextIndex = (queueIndex + 1) % queue.length;
+    set({
+      queueIndex: nextIndex,
+      currentTrack: queue[nextIndex],
+      isPlaying: true,
+      isBuffering: true,
+      progress: 0,
+      currentTime: 0,
+    });
+  },
+  prevTrack: () => {
+    const { queue, queueIndex } = get();
+    if (queue.length === 0) return;
+    const prevIndex = (queueIndex - 1 + queue.length) % queue.length;
+    set({
+      queueIndex: prevIndex,
+      currentTrack: queue[prevIndex],
+      isPlaying: true,
+      isBuffering: true,
+      progress: 0,
+      currentTime: 0,
+    });
+  },
 }));

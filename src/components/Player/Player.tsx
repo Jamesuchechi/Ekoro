@@ -36,6 +36,8 @@ export default function Player() {
     setProgress,
     setCurrentTime,
     toggleLikeTrack,
+    nextTrack,
+    prevTrack,
   } = usePlayerStore();
 
   const [muted, setMuted] = useState(false);
@@ -410,7 +412,10 @@ export default function Player() {
             >
               <Shuffle size={18} />
             </button>
-            <button style={{ background: "none", border: "none", color: "var(--ek-text-primary)" }}>
+            <button
+              onClick={prevTrack}
+              style={{ background: "none", border: "none", color: "var(--ek-text-primary)", cursor: "pointer" }}
+            >
               <SkipBack size={26} fill="currentColor" />
             </button>
             <button
@@ -425,11 +430,15 @@ export default function Player() {
                 alignItems: "center",
                 justifyContent: "center",
                 color: "var(--ek-void)",
+                cursor: "pointer",
               }}
             >
               {isBuffering ? <Loader2 size={28} className="animate-spin" /> : isPlaying ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" style={{ marginLeft: 4 }} />}
             </button>
-            <button style={{ background: "none", border: "none", color: "var(--ek-text-primary)" }}>
+            <button
+              onClick={nextTrack}
+              style={{ background: "none", border: "none", color: "var(--ek-text-primary)", cursor: "pointer" }}
+            >
               <SkipForward size={26} fill="currentColor" />
             </button>
             <button
@@ -664,6 +673,7 @@ export default function Player() {
                   <Shuffle size={14} />
                 </button>
                 <button
+                  onClick={prevTrack}
                   style={{
                     background: "none",
                     border: "none",
@@ -704,6 +714,7 @@ export default function Player() {
                 </button>
 
                 <button
+                  onClick={nextTrack}
                   style={{
                     background: "none",
                     border: "none",

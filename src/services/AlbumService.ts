@@ -1,169 +1,223 @@
-import { fetchMusicBrainz, fetchDiscogs } from "./apiClients";
-import { CacheService } from "./CacheService";
-import { ImageService } from "./ImageService";
-
-const ALBUM_CACHE_TTL = 24 * 60 * 60; // 24 hours in seconds
-
-export interface UnifiedTrack {
-  id: string;
-  title: string;
-  artist: string;
-  duration: string;
-}
-
-export interface UnifiedAlbum {
-  id: string;
-  title: string;
-  cover: string;
-  artist: string;
-  tracks: UnifiedTrack[];
-  year: number | string;
-  genre?: string;
-  label?: string;
-}
+import { prisma } from "@/lib/prisma";
+import { AlbumType } from "@prisma/client";
 
 export class AlbumService {
   /**
-   * Fetch album details by MusicBrainz Release Group ID or Release ID
+   * Create an album (artist only).
    */
-  public static async getAlbum(id: string): Promise<UnifiedAlbum | null> {
-    const cacheKey = `album:${id}`;
-    const cached = await CacheService.get<UnifiedAlbum>(cacheKey);
-    if (cached) return cached;
-
-    try {
-      let releaseGroupId = "";
-      let releaseId = "";
-      let title = "";
-      let artistName = "";
-      let year: number | string = "Unknown";
-      const tracks: UnifiedTrack[] = [];
-
-      // 1. Determine if this ID is a Release Group or a Release
-      // We attempt to fetch as a release-group first
-      let releaseGroupData: any = null;
-      try {
-        releaseGroupData = await fetchMusicBrainz(`release-group/${id}`, {
-          inc: "releases+artists",
-        });
-        releaseGroupId = id;
-      } catch (e) {
-        // If release-group fetch fails, try fetching as a release
-        try {
-          const releaseData = await fetchMusicBrainz(`release/${id}`, {
-            inc: "release-groups+artists+recordings",
-          });
-          releaseId = id;
-          releaseGroupId = releaseData["release-group"]?.id || "";
-          title = releaseData.title;
-          artistName = releaseData["artist-credit"]?.[0]?.name || "Unknown Artist";
-          year = releaseData.date ? new Date(releaseData.date).getFullYear() : "Unknown";
-
-          // Parse tracks directly
-          if (Array.isArray(releaseData.media)) {
-            releaseData.media.forEach((medium: any) => {
-              if (Array.isArray(medium.tracks)) {
-                medium.tracks.forEach((t: any) => {
-                  const durationMs = t.length || 0;
-                  const mins = Math.floor(durationMs / 60000);
-                  const secs = Math.floor((durationMs % 60000) / 1000);
-                  const durationStr = `${mins}:${secs < 10 ? "0" : ""}${secs}`;
-
-                  tracks.push({
-                    id: t.recording?.id || t.id,
-                    title: t.title,
-                    artist: artistName,
-                    duration: durationStr,
-                  });
-                });
-              }
-            });
-          }
-        } catch (err) {
-          console.error(`Failed to fetch album by ID ${id} as either release-group or release:`, err);
-          return null;
-        }
-      }
-
-      // If we fetched a release group, we need to pick a release to get the tracks
-      if (releaseGroupData) {
-        title = releaseGroupData.title;
-        artistName = releaseGroupData["artist-credit"]?.[0]?.name || "Unknown Artist";
-        year = releaseGroupData["first-release-date"]
-          ? new Date(releaseGroupData["first-release-date"]).getFullYear()
-          : "Unknown";
-
-        const releases = releaseGroupData.releases;
-        if (Array.isArray(releases) && releases.length > 0) {
-          // Sort or pick the primary release (e.g. official release)
-          const official = releases.find((r: any) => r.status === "Official") || releases[0];
-          releaseId = official.id;
-
-          // Fetch the tracks for this release
-          const releaseDetails = await fetchMusicBrainz(`release/${releaseId}`, {
-            inc: "recordings",
-          });
-
-          if (Array.isArray(releaseDetails.media)) {
-            releaseDetails.media.forEach((medium: any) => {
-              if (Array.isArray(medium.tracks)) {
-                medium.tracks.forEach((t: any) => {
-                  const durationMs = t.length || 0;
-                  const mins = Math.floor(durationMs / 60000);
-                  const secs = Math.floor((durationMs % 60000) / 1000);
-                  const durationStr = `${mins}:${secs < 10 ? "0" : ""}${secs}`;
-
-                  tracks.push({
-                    id: t.recording?.id || t.id,
-                    title: t.title,
-                    artist: artistName,
-                    duration: durationStr,
-                  });
-                });
-              }
-            });
-          }
-        }
-      }
-
-      // 2. Fetch Album Cover
-      const cover = releaseGroupId ? await ImageService.getAlbumCover(releaseGroupId) : "/images/default-album.png";
-
-      // 3. Secondary Enrichment with Discogs
-      let genre = "";
-      let label = "";
-      try {
-        // Query after MusicBrainz data exists
-        const discogsData = await fetchDiscogs("database/search", {
-          q: `${artistName} - ${title}`,
-          type: "release",
-        });
-
-        if (discogsData && discogsData.results && discogsData.results.length > 0) {
-          const matchedRelease = discogsData.results[0];
-          genre = matchedRelease.genre ? matchedRelease.genre.join(", ") : "";
-          label = matchedRelease.label ? matchedRelease.label[0] : "";
-        }
-      } catch (discogsError) {
-        console.warn(`Discogs enrichment failed for album ${title} by ${artistName}:`, discogsError);
-      }
-
-      const album: UnifiedAlbum = {
-        id: releaseGroupId || releaseId,
-        title,
-        cover,
-        artist: artistName,
-        tracks,
-        year,
-        genre: genre || undefined,
-        label: label || undefined,
-      };
-
-      await CacheService.set(cacheKey, album, ALBUM_CACHE_TTL);
-      return album;
-    } catch (error) {
-      console.error(`AlbumService.getAlbum failed for ${id}:`, error);
-      return null;
+  public static async createAlbum(data: {
+    artistId: string;
+    title: string;
+    description?: string;
+    genre?: string;
+    coverArtUrl?: string;
+    releaseDate?: Date;
+    albumType?: AlbumType;
+  }) {
+    const baseSlug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    let slug = baseSlug;
+    let exists = await prisma.album.findUnique({ where: { slug } });
+    let counter = 1;
+    while (exists) {
+      slug = `${baseSlug}-${counter}`;
+      exists = await prisma.album.findUnique({ where: { slug } });
+      counter++;
     }
+
+    return await prisma.album.create({
+      data: {
+        artistId: data.artistId,
+        title: data.title,
+        slug,
+        description: data.description,
+        genre: data.genre,
+        coverArtUrl: data.coverArtUrl,
+        releaseDate: data.releaseDate || new Date(),
+        albumType: data.albumType || AlbumType.album,
+      },
+    });
+  }
+
+  /**
+   * Fetch album details and track list.
+   */
+  public static async getAlbumDetails(albumId: string) {
+    return await prisma.album.findUnique({
+      where: { id: albumId },
+      include: {
+        artist: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+            bio: true,
+          },
+        },
+        albumTracks: {
+          orderBy: { trackOrder: "asc" },
+          include: {
+            track: {
+              include: {
+                artist: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    avatarUrl: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Fetch album details by slug.
+   */
+  public static async getAlbumBySlug(slug: string) {
+    return await prisma.album.findUnique({
+      where: { slug },
+      include: {
+        artist: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+            bio: true,
+          },
+        },
+        albumTracks: {
+          orderBy: { trackOrder: "asc" },
+          include: {
+            track: {
+              include: {
+                artist: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    avatarUrl: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Update album metadata (artist only).
+   */
+  public static async updateAlbum(
+    albumId: string,
+    artistId: string,
+    data: {
+      title?: string;
+      description?: string;
+      genre?: string;
+      coverArtUrl?: string;
+      releaseDate?: Date;
+      albumType?: AlbumType;
+    }
+  ) {
+    // Check ownership
+    const album = await prisma.album.findUnique({ where: { id: albumId } });
+    if (!album || album.artistId !== artistId) {
+      throw new Error("UNAUTHORIZED");
+    }
+
+    const updateData: any = { ...data };
+    if (data.title && data.title !== album.title) {
+      const baseSlug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      let slug = baseSlug;
+      let exists = await prisma.album.findUnique({ where: { slug } });
+      let counter = 1;
+      while (exists) {
+        slug = `${baseSlug}-${counter}`;
+        exists = await prisma.album.findUnique({ where: { slug } });
+        counter++;
+      }
+      updateData.slug = slug;
+    }
+
+    return await prisma.album.update({
+      where: { id: albumId },
+      data: updateData,
+    });
+  }
+
+  /**
+   * Add a track to an album.
+   */
+  public static async addTrackToAlbum(albumId: string, artistId: string, trackId: string) {
+    // Check ownership of album
+    const album = await prisma.album.findUnique({ where: { id: albumId } });
+    if (!album || album.artistId !== artistId) {
+      throw new Error("UNAUTHORIZED");
+    }
+
+    // Check ownership of track
+    const track = await prisma.track.findUnique({ where: { id: trackId } });
+    if (!track || track.artistId !== artistId) {
+      throw new Error("UNAUTHORIZED");
+    }
+
+    // Get current maximum order
+    const maxTrack = await prisma.albumTrack.findFirst({
+      where: { albumId },
+      orderBy: { trackOrder: "desc" },
+    });
+    const order = maxTrack ? maxTrack.trackOrder + 1 : 1;
+
+    return await prisma.albumTrack.create({
+      data: {
+        albumId,
+        trackId,
+        trackOrder: order,
+      },
+    });
+  }
+
+  /**
+   * Remove a track from an album.
+   */
+  public static async removeTrackFromAlbum(albumId: string, artistId: string, trackId: string) {
+    // Check ownership of album
+    const album = await prisma.album.findUnique({ where: { id: albumId } });
+    if (!album || album.artistId !== artistId) {
+      throw new Error("UNAUTHORIZED");
+    }
+
+    await prisma.albumTrack.delete({
+      where: {
+        albumId_trackId: { albumId, trackId },
+      },
+    });
+
+    // Reorder remaining tracks
+    const tracks = await prisma.albumTrack.findMany({
+      where: { albumId },
+      orderBy: { trackOrder: "asc" },
+    });
+
+    for (let i = 0; i < tracks.length; i++) {
+      await prisma.albumTrack.update({
+        where: {
+          albumId_trackId: { albumId, trackId: tracks[i].trackId },
+        },
+        data: {
+          trackOrder: i + 1,
+        },
+      });
+    }
+
+    return true;
   }
 }

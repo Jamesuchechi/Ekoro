@@ -15,12 +15,14 @@ import {
   Coins,
   Music,
   ChevronRight,
+  Sparkles,
 } from "lucide-react";
 
 const PRIMARY_NAV = [
   { href: "/", label: "Home", icon: LayoutDashboard },
   { href: "/explore", label: "Explore", icon: Compass },
-  { href: "/explore?trending=true", label: "Trending", icon: Flame },
+  { href: "/trending", label: "Trending", icon: Flame },
+  { href: "/new-releases", label: "New releases", icon: Sparkles },
   { href: "/explore?artists=true", label: "Artists", icon: Mic2 },
   { href: "/explore?live=true", label: "Live sessions", icon: Radio },
 ];
@@ -254,8 +256,9 @@ export default function Sidebar() {
       <SectionLabel>Genres</SectionLabel>
       <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
         {GENRES.map((genre) => (
-          <button
+          <Link
             key={genre.label}
+            href={`/explore?genre=${encodeURIComponent(genre.label)}`}
             style={{
               display: "flex",
               alignItems: "center",
@@ -272,14 +275,15 @@ export default function Sidebar() {
               textAlign: "left",
               transition: "all 0.15s ease",
               letterSpacing: "-0.01em",
+              textDecoration: "none",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.color = "var(--ek-text-primary)";
-              (e.currentTarget as HTMLButtonElement).style.background = "var(--ek-surface)22";
+              (e.currentTarget as HTMLAnchorElement).style.color = "var(--ek-text-primary)";
+              (e.currentTarget as HTMLAnchorElement).style.background = "var(--ek-surface)22";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.color = "var(--ek-text-secondary)";
-              (e.currentTarget as HTMLButtonElement).style.background = "none";
+              (e.currentTarget as HTMLAnchorElement).style.color = "var(--ek-text-secondary)";
+              (e.currentTarget as HTMLAnchorElement).style.background = "none";
             }}
           >
             <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -287,7 +291,7 @@ export default function Sidebar() {
               {genre.label}
             </span>
             <ChevronRight size={11} style={{ color: "var(--ek-text-muted)" }} />
-          </button>
+          </Link>
         ))}
       </div>
 

@@ -3,7 +3,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Upload, Music, Image as ImageIcon, CheckCircle, AlertCircle, Loader, DollarSign, Clock, Layers, Sparkles } from "lucide-react";
+import { Upload, Music, Image as ImageIcon, CheckCircle, AlertCircle, Loader, DollarSign, Clock, Layers, Sparkles, Disc, Calendar, ArrowRight } from "lucide-react";
+import { createAlbumAction } from "@/app/actions/albums";
+import { AlbumType } from "@prisma/client";
 
 export default function UploadPage() {
   // Form values
@@ -30,6 +32,66 @@ export default function UploadPage() {
   // Artist uploaded tracks
   const [artistTracks, setArtistTracks] = useState<any[]>([]);
   const [isTracksLoading, setIsTracksLoading] = useState(true);
+
+  // Tabs / Albums State
+  const [activeTab, setActiveTab] = useState<"tracks" | "albums">("tracks");
+  const [artistAlbums, setArtistAlbums] = useState<any[]>([]);
+  const [isAlbumsLoading, setIsAlbumsLoading] = useState(false);
+  const [albumTitle, setAlbumTitle] = useState("");
+  const [albumDesc, setAlbumDesc] = useState("");
+  const [albumGenre, setAlbumGenre] = useState("Afrobeats");
+  const [albumType, setAlbumType] = useState<AlbumType>("album");
+  const [createAlbumLoading, setCreateAlbumLoading] = useState(false);
+  const [albumError, setAlbumError] = useState<string | null>(null);
+  const [albumSuccessMessage, setAlbumSuccessMessage] = useState<string | null>(null);
+
+  const fetchArtistAlbums = async () => {
+    try {
+      setIsAlbumsLoading(true);
+      const res = await fetch("/api/users/me/albums");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.albums)) {
+          setArtistAlbums(data.albums);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch artist albums:", err);
+    } finally {
+      setIsAlbumsLoading(false);
+    }
+  };
+
+  const handleAlbumSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!albumTitle.trim()) {
+      alert("Please provide an album title.");
+      return;
+    }
+
+    setCreateAlbumLoading(true);
+    setAlbumError(null);
+    setAlbumSuccessMessage(null);
+
+    const res = await createAlbumAction({
+      title: albumTitle,
+      description: albumDesc,
+      genre: albumGenre,
+      albumType: albumType,
+    });
+
+    setCreateAlbumLoading(false);
+    if (res.success) {
+      setAlbumSuccessMessage(`Album "${albumTitle}" created successfully!`);
+      setAlbumTitle("");
+      setAlbumDesc("");
+      setAlbumGenre("Afrobeats");
+      setAlbumType("album");
+      fetchArtistAlbums();
+    } else {
+      setAlbumError(res.error || "Failed to create album");
+    }
+  };
 
   // Refs
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -232,172 +294,873 @@ export default function UploadPage() {
       <div style={{ maxWidth: 1040, margin: "0 auto" }}>
         
         {/* Header */}
-        <div style={{ marginBottom: 40 }}>
+        <div style={{ marginBottom: 20 }}>
           <h1 style={{ fontFamily: "var(--font-display)", fontSize: 32, fontWeight: 500 }}>
             Creator Studio
           </h1>
           <p style={{ fontSize: 14, color: "var(--ek-text-secondary)", marginTop: 4 }}>
-            Upload and manage your audio catalogs
+            Upload tracks and publish album releases to your audience
           </p>
         </div>
 
-        {/* Outer Split Layout */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 40, alignItems: "start" }}>
-          
-          {/* Main Area: Upload Wizard */}
-          <div
+        {/* Tab Selection */}
+        <div style={{ display: "flex", gap: 16, borderBottom: "1px solid var(--ek-border-dim)", marginBottom: 32 }}>
+          <button
+            onClick={() => setActiveTab("tracks")}
             style={{
-              background: "var(--ek-raised)",
-              border: "1px solid var(--ek-border)",
-              borderRadius: 24,
-              padding: 32,
+              padding: "10px 16px",
+              fontSize: 13,
+              fontWeight: 600,
+              background: "transparent",
+              border: "none",
+              color: activeTab === "tracks" ? "var(--ek-gold)" : "var(--ek-text-secondary)",
+              borderBottom: activeTab === "tracks" ? "2px solid var(--ek-gold)" : "2px solid transparent",
+              cursor: "pointer",
+              transition: "all 0.15s ease",
             }}
           >
-            {/* STEP 1: Upload Form */}
-            {step === "form" && (
-              <form onSubmit={handleUploadSubmit} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-                
-                {/* Drag and Drop Audio area */}
-                {!audioFile ? (
-                  <div
-                    onDragOver={handleDragOver}
-                    onDrop={handleAudioDrop}
-                    onClick={() => audioInputRef.current?.click()}
-                    style={{
-                      border: "2px dashed var(--ek-border-mid)",
-                      borderRadius: 16,
-                      padding: "48px 24px",
-                      textAlign: "center",
-                      cursor: "pointer",
-                      background: "rgba(255,255,255,0.01)",
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--ek-gold)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--ek-border-mid)")}
-                  >
-                    <input
-                      ref={audioInputRef}
-                      type="file"
-                      accept=".mp3,.wav,.flac,.aac,.m4a"
-                      style={{ display: "none" }}
-                      onChange={(e) => e.target.files?.[0] && handleAudioChange(e.target.files[0])}
-                    />
-                    <Upload size={32} style={{ color: "var(--ek-text-secondary)", margin: "0 auto 16px" }} />
-                    <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>
-                      Drag & Drop Audio File
-                    </h3>
-                    <p style={{ fontSize: 12, color: "var(--ek-text-tertiary)" }}>
-                      WAV, FLAC, MP3, or AAC up to 200MB
-                    </p>
-                  </div>
-                ) : (
-                  <div
-                    style={{
-                      background: "var(--ek-surface)",
-                      border: "1px solid var(--ek-border-mid)",
-                      borderRadius: 16,
-                      padding: "16px 20px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <Music size={20} style={{ color: "var(--ek-gold)" }} />
-                      <div style={{ minWidth: 0 }}>
-                        <div
+            Tracks
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("albums");
+              fetchArtistAlbums();
+            }}
+            style={{
+              padding: "10px 16px",
+              fontSize: 13,
+              fontWeight: 600,
+              background: "transparent",
+              border: "none",
+              color: activeTab === "albums" ? "var(--ek-gold)" : "var(--ek-text-secondary)",
+              borderBottom: activeTab === "albums" ? "2px solid var(--ek-gold)" : "2px solid transparent",
+              cursor: "pointer",
+              transition: "all 0.15s ease",
+            }}
+          >
+            Albums
+          </button>
+        </div>
+
+        {activeTab === "tracks" ? (
+          <>
+            {/* Outer Split Layout */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 40, alignItems: "start" }}>
+              
+              {/* Main Area: Upload Wizard */}
+              <div
+                style={{
+                  background: "var(--ek-raised)",
+                  border: "1px solid var(--ek-border)",
+                  borderRadius: 24,
+                  padding: 32,
+                }}
+              >
+                {/* STEP 1: Upload Form */}
+                {step === "form" && (
+                  <form onSubmit={handleUploadSubmit} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                    
+                    {/* Drag and Drop Audio area */}
+                    {!audioFile ? (
+                      <div
+                        onDragOver={handleDragOver}
+                        onDrop={handleAudioDrop}
+                        onClick={() => audioInputRef.current?.click()}
+                        style={{
+                          border: "2px dashed var(--ek-border-mid)",
+                          borderRadius: 16,
+                          padding: "48px 24px",
+                          textAlign: "center",
+                          cursor: "pointer",
+                          background: "rgba(255,255,255,0.01)",
+                          transition: "all 0.2s ease",
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--ek-gold)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--ek-border-mid)")}
+                      >
+                        <input
+                          ref={audioInputRef}
+                          type="file"
+                          accept=".mp3,.wav,.flac,.aac,.m4a"
+                          style={{ display: "none" }}
+                          onChange={(e) => e.target.files?.[0] && handleAudioChange(e.target.files[0])}
+                        />
+                        <Upload size={32} style={{ color: "var(--ek-text-secondary)", margin: "0 auto 16px" }} />
+                        <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>
+                          Drag & Drop Audio File
+                        </h3>
+                        <p style={{ fontSize: 12, color: "var(--ek-text-tertiary)" }}>
+                          WAV, FLAC, MP3, or AAC up to 200MB
+                        </p>
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          background: "var(--ek-surface)",
+                          border: "1px solid var(--ek-border-mid)",
+                          borderRadius: 16,
+                          padding: "16px 20px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                          <Music size={20} style={{ color: "var(--ek-gold)" }} />
+                          <div style={{ minWidth: 0 }}>
+                            <div
+                              style={{
+                                fontSize: 13,
+                                fontWeight: 600,
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              {audioFile.name}
+                            </div>
+                            <div style={{ fontSize: 11, color: "var(--ek-text-tertiary)" }}>
+                              {(audioFile.size / (1024 * 1024)).toFixed(2)} MB
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setAudioFile(null)}
                           style={{
-                            fontSize: 13,
-                            fontWeight: 600,
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
+                            fontSize: 12,
+                            color: "var(--ek-text-secondary)",
+                            background: "transparent",
+                            border: "none",
+                            cursor: "pointer",
                           }}
                         >
-                          {audioFile.name}
-                        </div>
-                        <div style={{ fontSize: 11, color: "var(--ek-text-tertiary)" }}>
-                          {(audioFile.size / (1024 * 1024)).toFixed(2)} MB
+                          Remove
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Split Metadata/Cover section */}
+                    <div style={{ display: "grid", gridTemplateColumns: "180px 1fr", gap: 24 }}>
+                      
+                      {/* Artwork Upload preview */}
+                      <div>
+                        <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ek-text-secondary)", marginBottom: 8 }}>
+                          Cover Art
+                        </label>
+                        <div
+                          onClick={() => coverInputRef.current?.click()}
+                          style={{
+                            width: "100%",
+                            aspectRatio: "1/1",
+                            borderRadius: 12,
+                            border: "1px solid var(--ek-border-mid)",
+                            background: "var(--ek-surface)",
+                            cursor: "pointer",
+                            overflow: "hidden",
+                            position: "relative",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <input
+                            ref={coverInputRef}
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            style={{ display: "none" }}
+                            onChange={(e) => e.target.files?.[0] && handleCoverChange(e.target.files[0])}
+                          />
+                          {coverPreview ? (
+                            <Image
+                              src={coverPreview}
+                              alt="Cover preview"
+                              fill
+                              unoptimized
+                              style={{ objectFit: "cover" }}
+                            />
+                          ) : (
+                            <>
+                              <ImageIcon size={20} style={{ color: "var(--ek-text-tertiary)", marginBottom: 6 }} />
+                              <span style={{ fontSize: 10, color: "var(--ek-text-tertiary)" }}>Upload JPG/PNG</span>
+                            </>
+                          )}
                         </div>
                       </div>
+
+                      {/* Metadata fields */}
+                      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                        <div>
+                          <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ek-text-secondary)", marginBottom: 6 }}>
+                            Track Title *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Enter track name"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            style={{
+                              width: "100%",
+                              background: "var(--ek-surface)",
+                              border: "1px solid var(--ek-border-mid)",
+                              borderRadius: 8,
+                              padding: "10px 12px",
+                              fontSize: 13,
+                              color: "var(--ek-text-primary)",
+                              outline: "none",
+                            }}
+                          />
+                        </div>
+
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                          <div>
+                            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ek-text-secondary)", marginBottom: 6 }}>
+                              Genre
+                            </label>
+                            <select
+                              value={genre}
+                              onChange={(e) => setGenre(e.target.value)}
+                              style={{
+                                width: "100%",
+                                background: "var(--ek-surface)",
+                                border: "1px solid var(--ek-border-mid)",
+                                borderRadius: 8,
+                                padding: "10px 12px",
+                                fontSize: 13,
+                                color: "var(--ek-text-primary)",
+                                outline: "none",
+                              }}
+                            >
+                              <option>Afrobeats</option>
+                              <option>Alternative</option>
+                              <option>Hip Hop</option>
+                              <option>R&B</option>
+                              <option>Amapiano</option>
+                              <option>Highlife</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ek-text-secondary)", marginBottom: 6 }}>
+                              Mood
+                            </label>
+                            <select
+                              value={mood}
+                              onChange={(e) => setMood(e.target.value)}
+                              style={{
+                                width: "100%",
+                                background: "var(--ek-surface)",
+                                border: "1px solid var(--ek-border-mid)",
+                                borderRadius: 8,
+                                padding: "10px 12px",
+                                fontSize: 13,
+                                color: "var(--ek-text-primary)",
+                                outline: "none",
+                              }}
+                            >
+                              <option>Chill</option>
+                              <option>Hype</option>
+                              <option>Moody</option>
+                              <option>Romantic</option>
+                              <option>High Energy</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
                     </div>
+
+                    {/* Additional Settings */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, borderTop: "1px solid var(--ek-border-dim)", paddingTop: 20 }}>
+                      
+                      {/* Description & BPM */}
+                      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                        <div>
+                          <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ek-text-secondary)", marginBottom: 6 }}>
+                            Description
+                          </label>
+                          <textarea
+                            placeholder="Write something about this track..."
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            rows={3}
+                            style={{
+                              width: "100%",
+                              background: "var(--ek-surface)",
+                              border: "1px solid var(--ek-border-mid)",
+                              borderRadius: 8,
+                              padding: "10px 12px",
+                              fontSize: 13,
+                              color: "var(--ek-text-primary)",
+                              outline: "none",
+                              resize: "none",
+                            }}
+                          />
+                        </div>
+
+                        <div>
+                          <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ek-text-secondary)", marginBottom: 6 }}>
+                            BPM (Beats Per Minute)
+                          </label>
+                          <input
+                            type="number"
+                            placeholder="e.g. 120"
+                            value={bpm}
+                            onChange={(e) => setBpm(e.target.value)}
+                            style={{
+                              width: "100%",
+                              background: "var(--ek-surface)",
+                              border: "1px solid var(--ek-border-mid)",
+                              borderRadius: 8,
+                              padding: "10px 12px",
+                              fontSize: 13,
+                              color: "var(--ek-text-primary)",
+                              outline: "none",
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Download Settings */}
+                      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, minHeight: 40 }}>
+                          <input
+                            type="checkbox"
+                            id="isDownloadable"
+                            checked={isDownloadable}
+                            onChange={(e) => setIsDownloadable(e.target.checked)}
+                            style={{
+                              width: 16,
+                              height: 16,
+                              accentColor: "var(--ek-gold)",
+                              cursor: "pointer",
+                            }}
+                          />
+                          <label htmlFor="isDownloadable" style={{ fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+                            Allow listeners to download raw file
+                          </label>
+                        </div>
+
+                        {isDownloadable && (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                            <div>
+                              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ek-text-secondary)", marginBottom: 6 }}>
+                                Download Tier
+                              </label>
+                              <select
+                                value={downloadType}
+                                onChange={(e) => setDownloadType(e.target.value)}
+                                style={{
+                                  width: "100%",
+                                  background: "var(--ek-surface)",
+                                  border: "1px solid var(--ek-border-mid)",
+                                  borderRadius: 8,
+                                  padding: "10px 12px",
+                                  fontSize: 13,
+                                  color: "var(--ek-text-primary)",
+                                  outline: "none",
+                                }}
+                              >
+                                <option value="free">Free Download</option>
+                                <option value="paid">Paid Download</option>
+                                <option value="premium-only">Premium Subscriber Only</option>
+                              </select>
+                            </div>
+
+                            {downloadType === "paid" && (
+                              <div>
+                                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ek-text-secondary)", marginBottom: 6 }}>
+                                  Price (USD)
+                                </label>
+                                <div style={{ position: "relative" }}>
+                                  <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "var(--ek-text-secondary)" }}>
+                                    $
+                                  </span>
+                                  <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0.00"
+                                    value={downloadPrice}
+                                    onChange={(e) => setDownloadPrice(e.target.value)}
+                                    style={{
+                                      width: "100%",
+                                      background: "var(--ek-surface)",
+                                      border: "1px solid var(--ek-border-mid)",
+                                      borderRadius: 8,
+                                      padding: "10px 12px 10px 28px",
+                                      fontSize: 13,
+                                      color: "var(--ek-text-primary)",
+                                      outline: "none",
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                    </div>
+
+                    {error && (
+                      <div
+                        style={{
+                          background: "rgba(239, 68, 68, 0.1)",
+                          border: "1px solid rgba(239, 68, 68, 0.2)",
+                          borderRadius: 8,
+                          padding: "12px 16px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          fontSize: 13,
+                          color: "#ef4444",
+                        }}
+                      >
+                        <AlertCircle size={16} />
+                        {error}
+                      </div>
+                    )}
+
+                    {/* Submit button */}
                     <button
-                      type="button"
-                      onClick={() => setAudioFile(null)}
+                      type="submit"
+                      disabled={!audioFile || !title.trim()}
                       style={{
-                        fontSize: 12,
-                        color: "var(--ek-text-secondary)",
-                        background: "transparent",
+                        background: audioFile && title.trim() ? "var(--ek-gold)" : "var(--ek-surface)",
+                        color: audioFile && title.trim() ? "#0f0f0f" : "var(--ek-text-muted)",
+                        fontSize: 14,
+                        fontWeight: 600,
+                        padding: "14px 28px",
+                        borderRadius: 99,
                         border: "none",
-                        cursor: "pointer",
+                        cursor: audioFile && title.trim() ? "pointer" : "default",
+                        transition: "all 0.2s ease",
+                        marginTop: 12,
                       }}
                     >
-                      Remove
+                      Publish Track
                     </button>
+
+                  </form>
+                )}
+
+                {/* STEP 2: Uploading Progress */}
+                {step === "uploading" && (
+                  <div style={{ textAlign: "center", padding: "40px 0" }}>
+                    <Upload size={48} style={{ color: "var(--ek-gold)", margin: "0 auto 24px", animation: "bounce 2s infinite" }} />
+                    <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>
+                      Uploading Files
+                    </h3>
+                    <p style={{ fontSize: 13, color: "var(--ek-text-secondary)", marginBottom: 32 }}>
+                      Transferring your high-quality files securely...
+                    </p>
+
+                    {/* Progress bar */}
+                    <div style={{ maxWidth: 400, margin: "0 auto" }}>
+                      <div
+                        style={{
+                          height: 8,
+                          background: "var(--ek-surface)",
+                          borderRadius: 99,
+                          overflow: "hidden",
+                          border: "1px solid var(--ek-border-dim)",
+                          marginBottom: 12,
+                        }}
+                      >
+                        <div
+                          style={{
+                            height: "100%",
+                            width: `${uploadProgress}%`,
+                            background: "var(--ek-gold)",
+                            transition: "width 0.1s ease",
+                          }}
+                        />
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--ek-text-secondary)" }}>
+                        <span>Progress</span>
+                        <span>{uploadProgress}%</span>
+                      </div>
+                    </div>
                   </div>
                 )}
 
-                {/* Split Metadata/Cover section */}
-                <div style={{ display: "grid", gridTemplateColumns: "180px 1fr", gap: 24 }}>
-                  
-                  {/* Artwork Upload preview */}
-                  <div>
-                    <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ek-text-secondary)", marginBottom: 8 }}>
-                      Cover Art
-                    </label>
+                {/* STEP 3: Background Transcoding Poller */}
+                {step === "processing" && (
+                  <div style={{ textAlign: "center", padding: "40px 0" }}>
+                    {processingStatus === "processing" ? (
+                      <>
+                        <div style={{ display: "inline-flex", padding: 20, background: "rgba(201,168,76,0.1)", borderRadius: "50%", marginBottom: 24, border: "1px solid rgba(201,168,76,0.2)" }}>
+                          <Loader size={32} style={{ color: "var(--ek-gold)", animation: "spin 2s linear infinite" }} />
+                        </div>
+                        <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>
+                          Processing Track
+                        </h3>
+                        <p style={{ fontSize: 13, color: "var(--ek-text-secondary)", lineHeight: 1.6, maxWidth: 440, margin: "0 auto 24px" }}>
+                          Your track is being processed. We are transcoding to standard HLS streaming chunks, MP3 codecs, and compiling track data.
+                        </p>
+                        <div style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--ek-text-tertiary)" }}>
+                          This usually takes less than a minute. You can safely stay on this page.
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle size={48} style={{ color: "#ef4444", margin: "0 auto 24px" }} />
+                        <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>
+                          Transcoding Failed
+                        </h3>
+                        <p style={{ fontSize: 13, color: "var(--ek-text-secondary)", marginBottom: 32 }}>
+                          The system failed to transcode your audio file. Please verify it is a valid audio format and try again.
+                        </p>
+                        <button
+                          onClick={resetForm}
+                          style={{
+                            background: "var(--ek-surface)",
+                            border: "1px solid var(--ek-border-mid)",
+                            borderRadius: 99,
+                            padding: "10px 24px",
+                            fontSize: 13,
+                            color: "var(--ek-text-primary)",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Go Back
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* STEP 4: Success Screen */}
+                {step === "success" && publishedTrack && (
+                  <div style={{ textAlign: "center", padding: "40px 0" }}>
+                    <CheckCircle size={48} style={{ color: "var(--ek-emerald)", margin: "0 auto 24px" }} />
+                    <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>
+                      Publish Successful!
+                    </h3>
+                    <p style={{ fontSize: 13, color: "var(--ek-text-secondary)", marginBottom: 32 }}>
+                      Your track is live and streaming in high-fidelity HLS audio.
+                    </p>
+
+                    {/* Preview Mini Card */}
                     <div
-                      onClick={() => coverInputRef.current?.click()}
                       style={{
-                        width: "100%",
-                        aspectRatio: "1/1",
-                        borderRadius: 12,
-                        border: "1px solid var(--ek-border-mid)",
-                        background: "var(--ek-surface)",
-                        cursor: "pointer",
-                        overflow: "hidden",
-                        position: "relative",
                         display: "flex",
-                        flexDirection: "column",
                         alignItems: "center",
-                        justifyContent: "center",
+                        gap: 16,
+                        background: "var(--ek-surface)",
+                        border: "1px solid var(--ek-border-mid)",
+                        borderRadius: 16,
+                        padding: 16,
+                        textAlign: "left",
+                        maxWidth: 400,
+                        margin: "0 auto 32px",
                       }}
                     >
-                      <input
-                        ref={coverInputRef}
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        style={{ display: "none" }}
-                        onChange={(e) => e.target.files?.[0] && handleCoverChange(e.target.files[0])}
-                      />
-                      {coverPreview ? (
-                        <Image
-                          src={coverPreview}
-                          alt="Cover preview"
-                          fill
-                          unoptimized
-                          style={{ objectFit: "cover" }}
-                        />
-                      ) : (
-                        <>
-                          <ImageIcon size={20} style={{ color: "var(--ek-text-tertiary)", marginBottom: 6 }} />
-                          <span style={{ fontSize: 10, color: "var(--ek-text-tertiary)" }}>Upload JPG/PNG</span>
-                        </>
-                      )}
+                      <div
+                        style={{
+                          width: 56,
+                          height: 56,
+                          borderRadius: 8,
+                          overflow: "hidden",
+                          position: "relative",
+                          background: "var(--ek-raised)",
+                        }}
+                      >
+                        {publishedTrack.coverArtUrl ? (
+                          <Image
+                            src={publishedTrack.coverArtUrl.startsWith("http") || publishedTrack.coverArtUrl.startsWith("/") ? publishedTrack.coverArtUrl : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tracks/${publishedTrack.coverArtUrl}`}
+                            alt={publishedTrack.title}
+                            fill
+                            unoptimized
+                            style={{ objectFit: "cover" }}
+                          />
+                        ) : (
+                          <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <Music size={20} />
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 600 }}>{publishedTrack.title}</div>
+                        <div style={{ fontSize: 12, color: "var(--ek-text-secondary)" }}>{genre}</div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: "flex", justifyContent: "center", gap: 14 }}>
+                      <Link href={`/track/${publishedTrack.slug}`}>
+                        <span
+                          style={{
+                            background: "var(--ek-gold)",
+                            color: "#0f0f0f",
+                            fontWeight: 600,
+                            fontSize: 13,
+                            padding: "10px 24px",
+                            borderRadius: 99,
+                            cursor: "pointer",
+                          }}
+                        >
+                          View Page
+                        </span>
+                      </Link>
+
+                      <button
+                        onClick={resetForm}
+                        style={{
+                          background: "transparent",
+                          border: "1px solid var(--ek-border-mid)",
+                          borderRadius: 99,
+                          padding: "10px 24px",
+                          fontSize: 13,
+                          color: "var(--ek-text-primary)",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Upload Another
+                      </button>
                     </div>
                   </div>
+                )}
 
-                  {/* Metadata fields */}
+              </div>
+
+              {/* Right Area: Guidelines */}
+              <div
+                style={{
+                  background: "var(--ek-raised)",
+                  border: "1px solid var(--ek-border)",
+                  borderRadius: 24,
+                  padding: 24,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 20,
+                }}
+              >
+                <div>
+                  <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                    <Sparkles size={14} style={{ color: "var(--ek-gold)" }} /> Guidelines
+                  </h3>
+                  <p style={{ fontSize: 12, color: "var(--ek-text-secondary)", lineHeight: 1.5 }}>
+                    Ensure your audio files are pre-rendered at high sample rates (minimum 44.1kHz). Lower qualities will degrade during adaptive bitrate HLS packaging.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                    <Layers size={14} style={{ color: "var(--ek-gold)" }} /> Storage & DRM
+                  </h3>
+                  <p style={{ fontSize: 12, color: "var(--ek-text-secondary)", lineHeight: 1.5 }}>
+                    All master files are stored inside encrypted secure vaults. Stream delivery is restricted dynamically to signed HLS tokens.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Bottom Section: Uploads Catalog List */}
+            <div
+              style={{
+                marginTop: 48,
+                background: "var(--ek-raised)",
+                border: "1px solid var(--ek-border)",
+                borderRadius: 24,
+                padding: 32,
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+                <div>
+                  <h2 style={{ fontSize: 18, fontWeight: 600 }}>Your Uploads Catalog</h2>
+                  <p style={{ fontSize: 12, color: "var(--ek-text-secondary)", marginTop: 4 }}>
+                    Review live deployment statuses of your uploaded master tracks
+                  </p>
+                </div>
+                <button
+                  onClick={fetchArtistTracks}
+                  style={{
+                    fontSize: 12,
+                    color: "var(--ek-gold)",
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  Refresh List
+                </button>
+              </div>
+
+              {isTracksLoading ? (
+                <div style={{ textAlign: "center", padding: "40px 0", color: "var(--ek-text-secondary)" }}>
+                  Loading catalog...
+                </div>
+              ) : artistTracks.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "40px 0", color: "var(--ek-text-tertiary)", fontSize: 13, fontStyle: "italic" }}>
+                  No tracks uploaded yet. Start publishing by selecting an audio file above.
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {artistTracks.map((track) => {
+                    let statusColor = "var(--ek-text-secondary)";
+                    let statusBg = "var(--ek-surface)";
+                    let statusLabel = track.status;
+
+                    if (track.status === "published") {
+                      statusColor = "var(--ek-emerald)";
+                      statusBg = "rgba(16, 185, 129, 0.1)";
+                      statusLabel = "Published";
+                    } else if (track.status === "processing") {
+                      statusColor = "var(--ek-gold)";
+                      statusBg = "rgba(201, 168, 76, 0.1)";
+                      statusLabel = "Processing";
+                    } else if (track.status === "failed") {
+                      statusColor = "#ef4444";
+                      statusBg = "rgba(239, 68, 68, 0.1)";
+                      statusLabel = "Failed";
+                    }
+
+                    return (
+                      <div
+                        key={track.id}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          background: "var(--ek-surface)",
+                          border: "1px solid var(--ek-border-dim)",
+                          borderRadius: 14,
+                          padding: "12px 20px",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
+                          <div
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: 8,
+                              overflow: "hidden",
+                              position: "relative",
+                              background: "var(--ek-raised)",
+                            }}
+                          >
+                            {track.coverArtUrl ? (
+                              <Image
+                                src={track.coverArtUrl.startsWith("http") || track.coverArtUrl.startsWith("/") ? track.coverArtUrl : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tracks/${track.coverArtUrl}`}
+                                alt={track.title}
+                                fill
+                                unoptimized
+                                style={{ objectFit: "cover" }}
+                              />
+                            ) : (
+                              <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <Music size={16} />
+                              </div>
+                            )}
+                          </div>
+
+                          <div style={{ minWidth: 0 }}>
+                            <div
+                              style={{
+                                fontSize: 14,
+                                fontWeight: 600,
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              {track.title}
+                            </div>
+                            <div style={{ fontSize: 12, color: "var(--ek-text-secondary)", display: "flex", gap: 8 }}>
+                              <span>{track.genre || "Alternative"}</span>
+                              <span>•</span>
+                              <span>{track.mood || "Chill"}</span>
+                              {track.bpm && (
+                                <>
+                                  <span>•</span>
+                                  <span>{track.bpm} BPM</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+                          {/* Price settings label */}
+                          <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--ek-text-secondary)" }}>
+                            {track.isDownloadable
+                              ? track.downloadType === "free"
+                                ? "Free DL"
+                                : track.downloadType === "premium-only"
+                                ? "Premium DL"
+                                : `$${track.downloadPrice}`
+                              : "No DL"}
+                          </span>
+
+                          {/* Status Badge */}
+                          <span
+                            style={{
+                              background: statusBg,
+                              color: statusColor,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              padding: "4px 12px",
+                              borderRadius: 99,
+                              border: `1px solid ${statusColor}20`,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.02em",
+                            }}
+                          >
+                            {statusLabel}
+                          </span>
+                        </div>
+
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Outer Split Layout for Albums */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 40, alignItems: "start" }}>
+              
+              {/* Main Area: Album Creator Wizard */}
+              <div
+                style={{
+                  background: "var(--ek-raised)",
+                  border: "1px solid var(--ek-border)",
+                  borderRadius: 24,
+                  padding: 32,
+                }}
+              >
+                <form onSubmit={handleAlbumSubmit} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 600 }}>Create New Release</h3>
+
+                  {albumSuccessMessage && (
+                    <div style={{ background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.2)", borderRadius: 10, padding: 12, fontSize: 12, color: "var(--ek-emerald)" }}>
+                      {albumSuccessMessage}
+                    </div>
+                  )}
+
+                  {albumError && (
+                    <div style={{ background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.2)", borderRadius: 10, padding: 12, fontSize: 12, color: "#ef4444" }}>
+                      {albumError}
+                    </div>
+                  )}
+
                   <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                     <div>
                       <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ek-text-secondary)", marginBottom: 6 }}>
-                        Track Title *
+                        Release Title *
                       </label>
                       <input
                         type="text"
                         required
-                        placeholder="Enter track name"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="e.g. Timeless EP, Love Damini"
+                        value={albumTitle}
+                        onChange={(e) => setAlbumTitle(e.target.value)}
                         style={{
                           width: "100%",
                           background: "var(--ek-surface)",
@@ -417,8 +1180,8 @@ export default function UploadPage() {
                           Genre
                         </label>
                         <select
-                          value={genre}
-                          onChange={(e) => setGenre(e.target.value)}
+                          value={albumGenre}
+                          onChange={(e) => setAlbumGenre(e.target.value)}
                           style={{
                             width: "100%",
                             background: "var(--ek-surface)",
@@ -441,11 +1204,11 @@ export default function UploadPage() {
 
                       <div>
                         <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ek-text-secondary)", marginBottom: 6 }}>
-                          Mood
+                          Release Type
                         </label>
                         <select
-                          value={mood}
-                          onChange={(e) => setMood(e.target.value)}
+                          value={albumType}
+                          onChange={(e: any) => setAlbumType(e.target.value)}
                           style={{
                             width: "100%",
                             background: "var(--ek-surface)",
@@ -457,32 +1220,22 @@ export default function UploadPage() {
                             outline: "none",
                           }}
                         >
-                          <option>Chill</option>
-                          <option>Hype</option>
-                          <option>Moody</option>
-                          <option>Romantic</option>
-                          <option>High Energy</option>
+                          <option value="album">Album</option>
+                          <option value="ep">EP</option>
+                          <option value="single">Single</option>
                         </select>
                       </div>
                     </div>
-                  </div>
 
-                </div>
-
-                {/* Additional Settings */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, borderTop: "1px solid var(--ek-border-dim)", paddingTop: 20 }}>
-                  
-                  {/* Description & BPM */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                     <div>
                       <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ek-text-secondary)", marginBottom: 6 }}>
                         Description
                       </label>
                       <textarea
-                        placeholder="Write something about this track..."
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        rows={3}
+                        placeholder="Tell your fans the story behind this release..."
+                        value={albumDesc}
+                        onChange={(e) => setAlbumDesc(e.target.value)}
+                        rows={4}
                         style={{
                           width: "100%",
                           background: "var(--ek-surface)",
@@ -496,527 +1249,194 @@ export default function UploadPage() {
                         }}
                       />
                     </div>
-
-                    <div>
-                      <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ek-text-secondary)", marginBottom: 6 }}>
-                        BPM (Beats Per Minute)
-                      </label>
-                      <input
-                        type="number"
-                        placeholder="e.g. 120"
-                        value={bpm}
-                        onChange={(e) => setBpm(e.target.value)}
-                        style={{
-                          width: "100%",
-                          background: "var(--ek-surface)",
-                          border: "1px solid var(--ek-border-mid)",
-                          borderRadius: 8,
-                          padding: "10px 12px",
-                          fontSize: 13,
-                          color: "var(--ek-text-primary)",
-                          outline: "none",
-                        }}
-                      />
-                    </div>
                   </div>
-
-                  {/* Download Settings */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, minHeight: 40 }}>
-                      <input
-                        type="checkbox"
-                        id="isDownloadable"
-                        checked={isDownloadable}
-                        onChange={(e) => setIsDownloadable(e.target.checked)}
-                        style={{
-                          width: 16,
-                          height: 16,
-                          accentColor: "var(--ek-gold)",
-                          cursor: "pointer",
-                        }}
-                      />
-                      <label htmlFor="isDownloadable" style={{ fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
-                        Allow listeners to download raw file
-                      </label>
-                    </div>
-
-                    {isDownloadable && (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                        <div>
-                          <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ek-text-secondary)", marginBottom: 6 }}>
-                            Download Tier
-                          </label>
-                          <select
-                            value={downloadType}
-                            onChange={(e) => setDownloadType(e.target.value)}
-                            style={{
-                              width: "100%",
-                              background: "var(--ek-surface)",
-                              border: "1px solid var(--ek-border-mid)",
-                              borderRadius: 8,
-                              padding: "10px 12px",
-                              fontSize: 13,
-                              color: "var(--ek-text-primary)",
-                              outline: "none",
-                            }}
-                          >
-                            <option value="free">Free Download</option>
-                            <option value="paid">Paid Download</option>
-                            <option value="premium-only">Premium Subscriber Only</option>
-                          </select>
-                        </div>
-
-                        {downloadType === "paid" && (
-                          <div>
-                            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ek-text-secondary)", marginBottom: 6 }}>
-                              Price (USD)
-                            </label>
-                            <div style={{ position: "relative" }}>
-                              <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "var(--ek-text-secondary)" }}>
-                                $
-                              </span>
-                              <input
-                                type="number"
-                                step="0.01"
-                                min="0.00"
-                                value={downloadPrice}
-                                onChange={(e) => setDownloadPrice(e.target.value)}
-                                style={{
-                                  width: "100%",
-                                  background: "var(--ek-surface)",
-                                  border: "1px solid var(--ek-border-mid)",
-                                  borderRadius: 8,
-                                  padding: "10px 12px 10px 28px",
-                                  fontSize: 13,
-                                  color: "var(--ek-text-primary)",
-                                  outline: "none",
-                                }}
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                </div>
-
-                {error && (
-                  <div
-                    style={{
-                      background: "rgba(239, 68, 68, 0.1)",
-                      border: "1px solid rgba(239, 68, 68, 0.2)",
-                      borderRadius: 8,
-                      padding: "12px 16px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      fontSize: 13,
-                      color: "#ef4444",
-                    }}
-                  >
-                    <AlertCircle size={16} />
-                    {error}
-                  </div>
-                )}
-
-                {/* Submit button */}
-                <button
-                  type="submit"
-                  disabled={!audioFile || !title.trim()}
-                  style={{
-                    background: audioFile && title.trim() ? "var(--ek-gold)" : "var(--ek-surface)",
-                    color: audioFile && title.trim() ? "#0f0f0f" : "var(--ek-text-muted)",
-                    fontSize: 14,
-                    fontWeight: 600,
-                    padding: "14px 28px",
-                    borderRadius: 99,
-                    border: "none",
-                    cursor: audioFile && title.trim() ? "pointer" : "default",
-                    transition: "all 0.2s ease",
-                    marginTop: 12,
-                  }}
-                >
-                  Publish Track
-                </button>
-
-              </form>
-            )}
-
-            {/* STEP 2: Uploading Progress */}
-            {step === "uploading" && (
-              <div style={{ textAlign: "center", padding: "40px 0" }}>
-                <Upload size={48} style={{ color: "var(--ek-gold)", margin: "0 auto 24px", animation: "bounce 2s infinite" }} />
-                <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>
-                  Uploading Files
-                </h3>
-                <p style={{ fontSize: 13, color: "var(--ek-text-secondary)", marginBottom: 32 }}>
-                  Transferring your high-quality files securely...
-                </p>
-
-                {/* Progress bar */}
-                <div style={{ maxWidth: 400, margin: "0 auto" }}>
-                  <div
-                    style={{
-                      height: 8,
-                      background: "var(--ek-surface)",
-                      borderRadius: 99,
-                      overflow: "hidden",
-                      border: "1px solid var(--ek-border-dim)",
-                      marginBottom: 12,
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: "100%",
-                        width: `${uploadProgress}%`,
-                        background: "var(--ek-gold)",
-                        transition: "width 0.1s ease",
-                      }}
-                    />
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--ek-text-secondary)" }}>
-                    <span>Progress</span>
-                    <span>{uploadProgress}%</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 3: Background Transcoding Poller */}
-            {step === "processing" && (
-              <div style={{ textAlign: "center", padding: "40px 0" }}>
-                {processingStatus === "processing" ? (
-                  <>
-                    <div style={{ display: "inline-flex", padding: 20, background: "rgba(201,168,76,0.1)", borderRadius: "50%", marginBottom: 24, border: "1px solid rgba(201,168,76,0.2)" }}>
-                      <Loader size={32} style={{ color: "var(--ek-gold)", animation: "spin 2s linear infinite" }} />
-                    </div>
-                    <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>
-                      Processing Track
-                    </h3>
-                    <p style={{ fontSize: 13, color: "var(--ek-text-secondary)", lineHeight: 1.6, maxWidth: 440, margin: "0 auto 24px" }}>
-                      Your track is being processed. We are transcoding to standard HLS streaming chunks, MP3 codecs, and compiling track data.
-                    </p>
-                    <div style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--ek-text-tertiary)" }}>
-                      This usually takes less than a minute. You can safely stay on this page.
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <AlertCircle size={48} style={{ color: "#ef4444", margin: "0 auto 24px" }} />
-                    <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>
-                      Transcoding Failed
-                    </h3>
-                    <p style={{ fontSize: 13, color: "var(--ek-text-secondary)", marginBottom: 32 }}>
-                      The system failed to transcode your audio file. Please verify it is a valid audio format and try again.
-                    </p>
-                    <button
-                      onClick={resetForm}
-                      style={{
-                        background: "var(--ek-surface)",
-                        border: "1px solid var(--ek-border-mid)",
-                        borderRadius: 99,
-                        padding: "10px 24px",
-                        fontSize: 13,
-                        color: "var(--ek-text-primary)",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Go Back
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* STEP 4: Success Screen */}
-            {step === "success" && publishedTrack && (
-              <div style={{ textAlign: "center", padding: "40px 0" }}>
-                <CheckCircle size={48} style={{ color: "var(--ek-emerald)", margin: "0 auto 24px" }} />
-                <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>
-                  Publish Successful!
-                </h3>
-                <p style={{ fontSize: 13, color: "var(--ek-text-secondary)", marginBottom: 32 }}>
-                  Your track is live and streaming in high-fidelity HLS audio.
-                </p>
-
-                {/* Preview Mini Card */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 16,
-                    background: "var(--ek-surface)",
-                    border: "1px solid var(--ek-border-mid)",
-                    borderRadius: 16,
-                    padding: 16,
-                    textAlign: "left",
-                    maxWidth: 400,
-                    margin: "0 auto 32px",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 56,
-                      height: 56,
-                      borderRadius: 8,
-                      overflow: "hidden",
-                      position: "relative",
-                      background: "var(--ek-raised)",
-                    }}
-                  >
-                    {publishedTrack.coverArtUrl ? (
-                      <Image
-                        src={publishedTrack.coverArtUrl.startsWith("http") || publishedTrack.coverArtUrl.startsWith("/") ? publishedTrack.coverArtUrl : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tracks/${publishedTrack.coverArtUrl}`}
-                        alt={publishedTrack.title}
-                        fill
-                        unoptimized
-                        style={{ objectFit: "cover" }}
-                      />
-                    ) : (
-                      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <Music size={20} />
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 600 }}>{publishedTrack.title}</div>
-                    <div style={{ fontSize: 12, color: "var(--ek-text-secondary)" }}>{genre}</div>
-                  </div>
-                </div>
-
-                <div style={{ display: "flex", justifyContent: "center", gap: 14 }}>
-                  <Link href={`/track/${publishedTrack.slug}`}>
-                    <span
-                      style={{
-                        background: "var(--ek-gold)",
-                        color: "#0f0f0f",
-                        fontWeight: 600,
-                        fontSize: 13,
-                        padding: "10px 24px",
-                        borderRadius: 99,
-                        cursor: "pointer",
-                      }}
-                    >
-                      View Page
-                    </span>
-                  </Link>
 
                   <button
-                    onClick={resetForm}
+                    type="submit"
+                    disabled={createAlbumLoading || !albumTitle.trim()}
                     style={{
-                      background: "transparent",
-                      border: "1px solid var(--ek-border-mid)",
+                      background: albumTitle.trim() ? "var(--ek-gold)" : "var(--ek-surface)",
+                      color: albumTitle.trim() ? "#0f0f0f" : "var(--ek-text-muted)",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      padding: "14px 28px",
                       borderRadius: 99,
-                      padding: "10px 24px",
-                      fontSize: 13,
-                      color: "var(--ek-text-primary)",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Upload Another
-                  </button>
-                </div>
-              </div>
-            )}
-
-          </div>
-
-          {/* Right Area: Guidelines */}
-          <div
-            style={{
-              background: "var(--ek-raised)",
-              border: "1px solid var(--ek-border)",
-              borderRadius: 24,
-              padding: 24,
-              display: "flex",
-              flexDirection: "column",
-              gap: 20,
-            }}
-          >
-            <div>
-              <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-                <Sparkles size={14} style={{ color: "var(--ek-gold)" }} /> Guidelines
-              </h3>
-              <p style={{ fontSize: 12, color: "var(--ek-text-secondary)", lineHeight: 1.5 }}>
-                Ensure your audio files are pre-rendered at high sample rates (minimum 44.1kHz). Lower qualities will degrade during adaptive bitrate HLS packaging.
-              </p>
-            </div>
-
-            <div>
-              <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-                <Layers size={14} style={{ color: "var(--ek-gold)" }} /> Storage & DRM
-              </h3>
-              <p style={{ fontSize: 12, color: "var(--ek-text-secondary)", lineHeight: 1.5 }}>
-                All master files are stored inside encrypted secure vaults. Stream delivery is restricted dynamically to signed HLS tokens.
-              </p>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Bottom Section: Uploads Catalog List */}
-        <div
-          style={{
-            marginTop: 48,
-            background: "var(--ek-raised)",
-            border: "1px solid var(--ek-border)",
-            borderRadius: 24,
-            padding: 32,
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-            <div>
-              <h2 style={{ fontSize: 18, fontWeight: 600 }}>Your Uploads Catalog</h2>
-              <p style={{ fontSize: 12, color: "var(--ek-text-secondary)", marginTop: 4 }}>
-                Review live deployment statuses of your uploaded master tracks
-              </p>
-            </div>
-            <button
-              onClick={fetchArtistTracks}
-              style={{
-                fontSize: 12,
-                color: "var(--ek-gold)",
-                background: "transparent",
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              Refresh List
-            </button>
-          </div>
-
-          {isTracksLoading ? (
-            <div style={{ textAlign: "center", padding: "40px 0", color: "var(--ek-text-secondary)" }}>
-              Loading catalog...
-            </div>
-          ) : artistTracks.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "40px 0", color: "var(--ek-text-tertiary)", fontSize: 13, fontStyle: "italic" }}>
-              No tracks uploaded yet. Start publishing by selecting an audio file above.
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {artistTracks.map((track) => {
-                let statusColor = "var(--ek-text-secondary)";
-                let statusBg = "var(--ek-surface)";
-                let statusLabel = track.status;
-
-                if (track.status === "published") {
-                  statusColor = "var(--ek-emerald)";
-                  statusBg = "rgba(16, 185, 129, 0.1)";
-                  statusLabel = "Published";
-                } else if (track.status === "processing") {
-                  statusColor = "var(--ek-gold)";
-                  statusBg = "rgba(201, 168, 76, 0.1)";
-                  statusLabel = "Processing";
-                } else if (track.status === "failed") {
-                  statusColor = "#ef4444";
-                  statusBg = "rgba(239, 68, 68, 0.1)";
-                  statusLabel = "Failed";
-                }
-
-                return (
-                  <div
-                    key={track.id}
-                    style={{
+                      border: "none",
+                      cursor: albumTitle.trim() ? "pointer" : "default",
+                      transition: "all 0.2s ease",
+                      marginTop: 12,
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "space-between",
-                      background: "var(--ek-surface)",
-                      border: "1px solid var(--ek-border-dim)",
-                      borderRadius: 14,
-                      padding: "12px 20px",
+                      justifyContent: "center",
+                      gap: 8,
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
-                      <div
-                        style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 8,
-                          overflow: "hidden",
-                          position: "relative",
-                          background: "var(--ek-raised)",
-                        }}
-                      >
-                        {track.coverArtUrl ? (
-                          <Image
-                            src={track.coverArtUrl.startsWith("http") || track.coverArtUrl.startsWith("/") ? track.coverArtUrl : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tracks/${track.coverArtUrl}`}
-                            alt={track.title}
-                            fill
-                            unoptimized
-                            style={{ objectFit: "cover" }}
-                          />
-                        ) : (
-                          <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <Music size={16} />
-                          </div>
-                        )}
-                      </div>
+                    {createAlbumLoading && <Loader size={16} className="animate-spin" />}
+                    <span>Create Release Group</span>
+                  </button>
+                </form>
+              </div>
 
-                      <div style={{ minWidth: 0 }}>
-                        <div
-                          style={{
-                            fontSize: 14,
-                            fontWeight: 600,
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                        >
-                          {track.title}
-                        </div>
-                        <div style={{ fontSize: 12, color: "var(--ek-text-secondary)", display: "flex", gap: 8 }}>
-                          <span>{track.genre || "Alternative"}</span>
-                          <span>•</span>
-                          <span>{track.mood || "Chill"}</span>
-                          {track.bpm && (
-                            <>
-                              <span>•</span>
-                              <span>{track.bpm} BPM</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+              {/* Right Area: Guidelines */}
+              <div
+                style={{
+                  background: "var(--ek-raised)",
+                  border: "1px solid var(--ek-border)",
+                  borderRadius: 24,
+                  padding: 24,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 20,
+                }}
+              >
+                <div>
+                  <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                    <Layers size={14} style={{ color: "var(--ek-gold)" }} /> Releases
+                  </h3>
+                  <p style={{ fontSize: 12, color: "var(--ek-text-secondary)", lineHeight: 1.5 }}>
+                    Creating an album groups your existing published tracks under a single release page. Once created, you can add tracks and edit covers.
+                  </p>
+                </div>
+              </div>
 
-                    <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-                      {/* Price settings label */}
-                      <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--ek-text-secondary)" }}>
-                        {track.isDownloadable
-                          ? track.downloadType === "free"
-                            ? "Free DL"
-                            : track.downloadType === "premium-only"
-                            ? "Premium DL"
-                            : `$${track.downloadPrice}`
-                          : "No DL"}
-                      </span>
-
-                      {/* Status Badge */}
-                      <span
-                        style={{
-                          background: statusBg,
-                          color: statusColor,
-                          fontSize: 11,
-                          fontWeight: 600,
-                          padding: "4px 12px",
-                          borderRadius: 99,
-                          border: `1px solid ${statusColor}20`,
-                          textTransform: "uppercase",
-                          letterSpacing: "0.02em",
-                        }}
-                      >
-                        {statusLabel}
-                      </span>
-                    </div>
-
-                  </div>
-                );
-              })}
             </div>
-          )}
 
-        </div>
+            {/* Bottom Section: Albums Catalog List */}
+            <div
+              style={{
+                marginTop: 48,
+                background: "var(--ek-raised)",
+                border: "1px solid var(--ek-border)",
+                borderRadius: 24,
+                padding: 32,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+                <div>
+                  <h2 style={{ fontSize: 18, fontWeight: 600 }}>Your Album Releases</h2>
+                  <p style={{ fontSize: 12, color: "var(--ek-text-secondary)", marginTop: 4 }}>
+                    Manage tracks, metadata, and publish statuses of your release groups
+                  </p>
+                </div>
+                <button
+                  onClick={fetchArtistAlbums}
+                  style={{
+                    fontSize: 12,
+                    color: "var(--ek-gold)",
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  Refresh List
+                </button>
+              </div>
+
+              {isAlbumsLoading ? (
+                <div style={{ textAlign: "center", padding: "40px 0", color: "var(--ek-text-secondary)" }}>
+                  Loading albums...
+                </div>
+              ) : artistAlbums.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "40px 0", color: "var(--ek-text-tertiary)", fontSize: 13, fontStyle: "italic" }}>
+                  No albums created yet. Use the form above to create your first album release.
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {artistAlbums.map((album) => {
+                    const cover = album.coverArtUrl
+                      ? album.coverArtUrl.startsWith("http") || album.coverArtUrl.startsWith("/")
+                        ? album.coverArtUrl
+                        : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/covers/${album.coverArtUrl}`
+                      : null;
+
+                    return (
+                      <div
+                        key={album.id}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          background: "var(--ek-surface)",
+                          border: "1px solid var(--ek-border-dim)",
+                          borderRadius: 14,
+                          padding: "14px 20px",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
+                          <div
+                            style={{
+                              width: 44,
+                              height: 44,
+                              borderRadius: 8,
+                              overflow: "hidden",
+                              position: "relative",
+                              background: "var(--ek-raised)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: 18,
+                            }}
+                          >
+                            {cover ? (
+                              <Image
+                                src={cover}
+                                alt={album.title}
+                                fill
+                                unoptimized
+                                style={{ objectFit: "cover" }}
+                              />
+                            ) : (
+                              "💿"
+                            )}
+                          </div>
+
+                          <div style={{ minWidth: 0 }}>
+                            <div
+                              style={{
+                                fontSize: 14,
+                                fontWeight: 600,
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              {album.title}
+                            </div>
+                            <div style={{ fontSize: 12, color: "var(--ek-text-secondary)", display: "flex", gap: 8 }}>
+                              <span style={{ textTransform: "capitalize" }}>{album.albumType}</span>
+                              <span>•</span>
+                              <span>{album.genre || "Alternative"}</span>
+                              <span>•</span>
+                              <span>{album._count?.albumTracks || 0} tracks</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <Link href={`/album/${album.slug}`}>
+                          <span
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 600,
+                              color: "var(--ek-gold)",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 4,
+                            }}
+                          >
+                            <span>Manage tracks</span>
+                            <ArrowRight size={13} />
+                          </span>
+                        </Link>
+
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+            </div>
+          </>
+        )}
 
       </div>
     </div>

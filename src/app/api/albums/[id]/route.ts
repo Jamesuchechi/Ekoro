@@ -12,7 +12,7 @@ export async function GET(
   }
 
   try {
-    const album = await AlbumService.getAlbum(id);
+    const album = await AlbumService.getAlbumDetails(id);
     if (!album) {
       return NextResponse.json({ error: "Album not found" }, { status: 404 });
     }

@@ -267,19 +267,19 @@
 
 ### 2.6 Albums
 
-- [ ] 🟡 Server Action / API route to create album (artist only)
-- [ ] 🟡 Query album metadata and album track list from database
-- [ ] 🟡 Server Action / API route to update album metadata (artist only)
-- [ ] 🟡 Server Action / API route to add track to album (artist only)
-- [ ] 🟡 Frontend: album detail page
-- [ ] 🟢 Play full album button (loads all tracks into player queue)
+- [x] 🟡 Server Action / API route to create album (artist only)
+- [x] 🟡 Query album metadata and album track list from database
+- [x] 🟡 Server Action / API route to update album metadata (artist only)
+- [x] 🟡 Server Action / API route to add track to album (artist only)
+- [x] 🟡 Frontend: album detail page
+- [x] 🟢 Play full album button (loads all tracks into player queue)
 
 ### 2.7 Explore & Browse Pages
 
-- [ ] 🔴 Frontend: `/explore` page with genre/mood grid
-- [ ] 🔴 Frontend: `/trending` page with top 50 chart
-- [ ] 🟡 Frontend: `/new-releases` page
-- [ ] 🟢 Frontend: genre detail page (e.g. `/genre/afrobeats`)
+- [x] 🔴 Frontend: `/explore` page with genre/mood grid
+- [x] 🔴 Frontend: `/trending` page with top 50 chart
+- [x] 🟡 Frontend: `/new-releases` page
+- [x] 🟢 Frontend: genre detail page (e.g. `/genre/afrobeats`)
 
 ---
 
