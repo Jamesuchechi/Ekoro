@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { href: "/", label: "Discover" },
   { href: "/explore", label: "Explore" },
   { href: "/explore?trending=true", label: "Trending" },
+  { href: "/feed", label: "Feed" },
 ];
 
 export default function Navbar() {

@@ -239,23 +239,23 @@
 
 ### 2.3 Artist Profiles
 
-- [ ] 🔴 Query full artist data by username: bio, follower count, track count
-- [ ] 🔴 Query paginated artist discography (published tracks only)
-- [ ] 🔴 Query artist albums list from database
-- [ ] 🔴 Frontend: `/artist/[username]` page
-  - [ ] Artist header: avatar, display name, bio, follower count, verified badge
-  - [ ] Tabs: Tracks, Albums, Playlists
-  - [ ] Follow/Unfollow button
-- [ ] 🟡 Query artist's most-played tracks (popular tracks section)
+- [x] 🔴 Query full artist data by username: bio, follower count, track count
+- [x] 🔴 Query paginated artist discography (published tracks only)
+- [x] 🔴 Query artist albums list from database
+- [x] 🔴 Frontend: `/artist/[username]` page
+  - [x] Artist header: avatar, display name, bio, follower count, verified badge
+  - [x] Tabs: Tracks, Albums, Playlists
+  - [x] Follow/Unfollow button
+- [x] 🟡 Query artist's most-played tracks (popular tracks section)
 
 ### 2.4 Social Graph (Follows)
 
-- [ ] 🔴 Follow user action (inserts into public.follows table with RLS)
-- [ ] 🔴 Unfollow user action (deletes from public.follows table with RLS)
-- [ ] 🔴 Query paginated list of user followers
-- [ ] 🔴 Query paginated list of users followed by a user
-- [ ] 🟡 Query user social feed (tracks published by followed artists, sorted by recency)
-- [ ] 🟢 Suggested artists section on home page
+- [x] 🔴 Follow user action (inserts into public.follows table with RLS)
+- [x] 🔴 Unfollow user action (deletes from public.follows table with RLS)
+- [x] 🔴 Query paginated list of user followers
+- [x] 🔴 Query paginated list of users followed by a user
+- [x] 🟡 Query user social feed (tracks published by followed artists, sorted by recency)
+- [x] 🟢 Suggested artists section on home page
 
 ### 2.5 Likes
 

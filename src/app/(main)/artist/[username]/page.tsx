@@ -1,19 +1,78 @@
 import React from "react";
+import { notFound } from "next/navigation";
+import { ArtistService } from "@/services/ArtistService";
+import { getSessionProfile } from "@/lib/auth-helpers";
+import { prisma } from "@/lib/prisma";
+import ArtistProfileClient from "@/components/Artist/ArtistProfileClient";
 
-export default function ArtistProfilePage({ params }: { params: { username: string } }) {
+export default async function ArtistPage({
+  params,
+}: {
+  params: { username: string };
+}) {
+  const username = decodeURIComponent(params.username);
+  
+  // 1. Fetch artist profile data from database
+  const artist = await ArtistService.getDbArtistByUsername(username);
+  if (!artist) {
+    notFound();
+  }
+
+  // 2. Fetch popular tracks, current tracks page (discography), and albums
+  const [popularTracks, tracksResult, albums, playlists, currentUser] = await Promise.all([
+    ArtistService.getArtistPopularTracks(artist.id, 5),
+    ArtistService.getArtistTracks(artist.id, 1, 10),
+    ArtistService.getArtistAlbums(artist.id),
+    
+    // Fetch public playlists created by this user
+    prisma.playlist.findMany({
+      where: {
+        userId: artist.id,
+        isPublic: true,
+      },
+      include: {
+        playlistTracks: {
+          include: {
+            track: {
+              select: {
+                coverArtUrl: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+    
+    // Get currently logged-in user profile
+    getSessionProfile(),
+  ]);
+
+  // 3. Determine if current user follows this artist
+  let isFollowing = false;
+  if (currentUser) {
+    const follow = await prisma.follow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId: currentUser.id,
+          followingId: artist.id,
+        },
+      },
+    });
+    isFollowing = !!follow;
+  }
+
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center gap-6 py-4">
-        <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-ekoro-blue to-purple-600 flex items-center justify-center text-2xl font-extrabold text-white">
-          {params.username.slice(0, 2).toUpperCase()}
-        </div>
-        <div className="flex flex-col">
-          <h1 className="text-2xl font-bold tracking-tight text-white">
-            @{params.username}
-          </h1>
-          <p className="text-sm text-white/60">Artist Profile</p>
-        </div>
-      </div>
-    </div>
+    <ArtistProfileClient
+      artist={artist}
+      popularTracks={popularTracks}
+      tracksResult={tracksResult}
+      albums={albums}
+      playlists={playlists}
+      currentUser={currentUser}
+      isFollowing={isFollowing}
+    />
   );
 }

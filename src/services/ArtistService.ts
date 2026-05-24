@@ -1,6 +1,7 @@
 import { fetchMusicBrainz, fetchLastFm, fetchDiscogs } from "./apiClients";
 import { CacheService } from "./CacheService";
 import { ImageService } from "./ImageService";
+import { prisma } from "@/lib/prisma";
 
 const ARTIST_CACHE_TTL = 24 * 60 * 60; // 24 hours in seconds
 
@@ -119,5 +120,109 @@ export class ArtistService {
       console.error(`ArtistService.getArtist failed for ${id}:`, error);
       return null;
     }
+  }
+
+  /**
+   * Query full artist user details from the database by username.
+   */
+  public static async getDbArtistByUsername(username: string) {
+    return await prisma.user.findUnique({
+      where: { username },
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        avatarUrl: true,
+        bio: true,
+        role: true,
+        isVerified: true,
+        _count: {
+          select: {
+            followers: true,
+            following: true,
+            tracks: {
+              where: { status: "published" }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * Query paginated artist discography (published tracks only).
+   */
+  public static async getArtistTracks(artistId: string, page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+    const [tracks, total] = await Promise.all([
+      prisma.track.findMany({
+        where: {
+          artistId,
+          status: "published",
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+        include: {
+          artist: {
+            select: {
+              username: true,
+              displayName: true,
+            }
+          }
+        }
+      }),
+      prisma.track.count({
+        where: {
+          artistId,
+          status: "published",
+        }
+      })
+    ]);
+
+    return {
+      tracks,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  /**
+   * Query artist albums list from database.
+   */
+  public static async getArtistAlbums(artistId: string) {
+    return await prisma.album.findMany({
+      where: { artistId },
+      orderBy: { releaseDate: "desc" },
+      include: {
+        _count: {
+          select: { albumTracks: true }
+        }
+      }
+    });
+  }
+
+  /**
+   * Query artist's most-played tracks (popular tracks section).
+   */
+  public static async getArtistPopularTracks(artistId: string, limit: number = 5) {
+    return await prisma.track.findMany({
+      where: {
+        artistId,
+        status: "published"
+      },
+      orderBy: { playCount: "desc" },
+      take: limit,
+      include: {
+        artist: {
+          select: {
+            username: true,
+            displayName: true,
+          }
+        }
+      }
+    });
   }
 }

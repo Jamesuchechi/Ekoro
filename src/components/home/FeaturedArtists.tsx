@@ -20,7 +20,7 @@ export default function FeaturedArtists() {
   useEffect(() => {
     async function fetchFeaturedArtists() {
       try {
-        const res = await fetch("/api/artists");
+        const res = await fetch("/api/artists?suggested=true&limit=6");
         if (res.ok) {
           const data = await res.json();
           if (data.success && Array.isArray(data.data)) {
@@ -79,7 +79,7 @@ export default function FeaturedArtists() {
               textTransform: "uppercase",
             }}
           >
-            CREATORS
+            RECOMMENDED
           </div>
           <h2
             style={{
@@ -91,7 +91,7 @@ export default function FeaturedArtists() {
               lineHeight: 1,
             }}
           >
-            Featured Artists
+            Suggested Artists
           </h2>
         </div>
       </div>
