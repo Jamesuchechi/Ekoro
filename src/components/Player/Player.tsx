@@ -49,15 +49,17 @@ export default function Player() {
       const delta = now - (lastTickRef.current || now);
       lastTickRef.current = now;
       if (!seeking) {
-        setCurrentTime((prev) => prev + delta / 1000);
-        setProgress((prev) => {
-          const next = prev + (delta / 1000 / 210) * 100;
-          if (next >= 100) {
-            setIsPlaying(false);
-            return 0;
-          }
-          return next;
-        });
+        const store = usePlayerStore.getState();
+        const nextTime = store.currentTime + delta / 1000;
+        setCurrentTime(nextTime);
+
+        const nextProgress = store.progress + (delta / 1000 / 210) * 100;
+        if (nextProgress >= 100) {
+          setIsPlaying(false);
+          setProgress(0);
+        } else {
+          setProgress(nextProgress);
+        }
       }
       animRef.current = requestAnimationFrame(tick);
     };
@@ -67,7 +69,7 @@ export default function Player() {
     return () => {
       if (animRef.current) cancelAnimationFrame(animRef.current);
     };
-  }, [isPlaying, seeking]);
+  }, [isPlaying, seeking, setCurrentTime, setIsPlaying, setProgress]);
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);

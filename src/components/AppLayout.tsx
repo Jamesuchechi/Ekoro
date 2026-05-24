@@ -6,37 +6,80 @@ import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import Player from "@/components/Player/Player";
 
+// Auth-only routes that render without chrome
+const AUTH_PATHS = ["/login", "/register", "/forgot-password", "/reset-password"];
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-
-  // Paths that should not display the dashboard chrome
-  const isAuthPage =
-    pathname === "/login" ||
-    pathname === "/register" ||
-    pathname === "/forgot-password" ||
-    pathname === "/reset-password";
+  const isAuthPage = AUTH_PATHS.includes(pathname ?? "");
 
   if (isAuthPage) {
-    return <div className="min-h-screen bg-slate-950">{children}</div>;
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "var(--ek-void)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {children}
+      </div>
+    );
   }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      {/* Top Header Navigation */}
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        overflow: "hidden",
+        background: "var(--ek-void)",
+      }}
+    >
+      {/* Sticky top nav */}
       <Navbar />
 
-      {/* Core Page Layout */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left Navigation Sidebar */}
-        <Sidebar />
+      {/* Body: sidebar + scrollable main */}
+      <div
+        style={{
+          display: "flex",
+          flex: 1,
+          overflow: "hidden",
+          // Reserve space at bottom for fixed player
+          paddingBottom: 0,
+        }}
+      >
+        {/* Sidebar — hidden on mobile via CSS */}
+        <div
+          className="sidebar-container"
+          style={{
+            display: "flex",
+            flexShrink: 0,
+          }}
+        >
+          <Sidebar />
+        </div>
 
-        {/* Main content scroll pane */}
-        <main className="flex-1 overflow-y-auto pb-24">
+        {/* Main scrollable content */}
+        <main
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            overflowX: "hidden",
+            // extra bottom padding so last content is never hidden behind player
+            paddingBottom: 80,
+            scrollbarWidth: "thin",
+            scrollbarColor: "var(--ek-border-mid) transparent",
+          }}
+        >
           {children}
         </main>
       </div>
 
-      {/* Bottom Persistent Audio Player */}
+      {/* Fixed bottom audio player */}
       <Player />
     </div>
   );
