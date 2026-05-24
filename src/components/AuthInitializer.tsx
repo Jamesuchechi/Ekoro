@@ -3,9 +3,12 @@
 import React, { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/stores/authStore";
+import { usePlayerStore } from "@/stores/playerStore";
+import { getUserLikedTrackIds } from "@/app/actions/likes";
 
 export default function AuthInitializer({ children }: { children: React.ReactNode }) {
   const { setUser, setProfile, setLoading, clearAuth } = useAuthStore();
+  const { setLikedTracks } = usePlayerStore();
   const supabase = createClient();
 
   useEffect(() => {
@@ -26,12 +29,17 @@ export default function AuthInitializer({ children }: { children: React.ReactNod
               setProfile(data.data);
             }
           }
+          // Fetch liked track IDs
+          const likedIds = await getUserLikedTrackIds();
+          setLikedTracks(likedIds);
         } else {
           clearAuth();
+          setLikedTracks([]);
         }
       } catch (err) {
         console.error("Failed to initialize authentication:", err);
         clearAuth();
+        setLikedTracks([]);
       } finally {
         setLoading(false);
       }
@@ -53,11 +61,14 @@ export default function AuthInitializer({ children }: { children: React.ReactNod
               setProfile(data.data);
             }
           }
+          const likedIds = await getUserLikedTrackIds();
+          setLikedTracks(likedIds);
         } catch (err) {
           console.error("Failed to refresh user profile:", err);
         }
       } else {
         clearAuth();
+        setLikedTracks([]);
       }
       setLoading(false);
     });
@@ -65,7 +76,7 @@ export default function AuthInitializer({ children }: { children: React.ReactNod
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase, setUser, setProfile, setLoading, clearAuth]);
+  }, [supabase, setUser, setProfile, setLoading, clearAuth, setLikedTracks]);
 
   return <>{children}</>;
 }

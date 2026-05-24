@@ -35,13 +35,15 @@ interface DBTrack {
 interface TrackDetailsClientProps {
   track: DBTrack;
   relatedTracks: any[];
+  initialLikesCount: number;
 }
 
-export default function TrackDetailsClient({ track, relatedTracks }: TrackDetailsClientProps) {
+export default function TrackDetailsClient({ track, relatedTracks, initialLikesCount }: TrackDetailsClientProps) {
   const { currentTrack, isPlaying, setTrack, togglePlay, likedTracks, toggleLikeTrack, progress, currentTime } =
     usePlayerStore();
   const [commentInput, setCommentInput] = useState("");
   const [comments, setComments] = useState<any[]>([]);
+  const [likesCount, setLikesCount] = useState(initialLikesCount);
 
   useEffect(() => {
     async function fetchComments() {
@@ -412,7 +414,10 @@ export default function TrackDetailsClient({ track, relatedTracks }: TrackDetail
 
               {/* Like Button */}
               <button
-                onClick={() => toggleLikeTrack(track.id)}
+                onClick={() => {
+                  toggleLikeTrack(track.id);
+                  setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
+                }}
                 style={{
                   width: 48,
                   height: 48,
@@ -675,6 +680,12 @@ export default function TrackDetailsClient({ track, relatedTracks }: TrackDetail
                     <BarChart2 size={13} /> Plays
                   </span>
                   <span style={{ fontFamily: "var(--font-mono)", fontWeight: 500 }}>{playsStr}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+                  <span style={{ color: "var(--ek-text-tertiary)", display: "flex", alignItems: "center", gap: 6 }}>
+                    <Heart size={13} style={{ color: isLiked ? "var(--ek-red)" : "inherit" }} /> Likes
+                  </span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontWeight: 500 }}>{likesCount}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
                   <span style={{ color: "var(--ek-text-tertiary)", display: "flex", alignItems: "center", gap: 6 }}>

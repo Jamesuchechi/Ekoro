@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { Track } from "@/types";
+import { likeTrack, unlikeTrack } from "@/app/actions/likes";
 
 interface PlayerState {
   currentTrack: Track | null;
@@ -17,9 +18,10 @@ interface PlayerState {
   setProgress: (progress: number) => void;
   setCurrentTime: (currentTime: number) => void;
   toggleLikeTrack: (trackId: string) => void;
+  setLikedTracks: (likedTracks: string[]) => void;
 }
 
-export const usePlayerStore = create<PlayerState>((set) => ({
+export const usePlayerStore = create<PlayerState>((set, get) => ({
   currentTrack: {
     id: "1",
     title: "Essence",
@@ -35,7 +37,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   volume: 75,
   progress: 38,
   currentTime: 84,
-  likedTracks: ["1", "t1"],
+  likedTracks: [],
   setTrack: (track) =>
     set({
       currentTrack: track,
@@ -50,12 +52,36 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   setVolume: (volume) => set({ volume }),
   setProgress: (progress) => set({ progress }),
   setCurrentTime: (currentTime) => set({ currentTime }),
-  toggleLikeTrack: (trackId) =>
-    set((state) => {
-      const isLiked = state.likedTracks.includes(trackId);
-      const likedTracks = isLiked
+  toggleLikeTrack: async (trackId) => {
+    const state = get();
+    const isLiked = state.likedTracks.includes(trackId);
+    
+    // Optimistic update
+    set((state) => ({
+      likedTracks: isLiked
         ? state.likedTracks.filter((id) => id !== trackId)
-        : [...state.likedTracks, trackId];
-      return { likedTracks };
-    }),
+        : [...state.likedTracks, trackId],
+    }));
+
+    try {
+      const res = isLiked ? await unlikeTrack(trackId) : await likeTrack(trackId);
+      if (!res.success) {
+        // Rollback
+        set((state) => ({
+          likedTracks: isLiked
+            ? [...state.likedTracks, trackId]
+            : state.likedTracks.filter((id) => id !== trackId),
+        }));
+      }
+    } catch (err) {
+      console.error("Failed to sync like status:", err);
+      // Rollback
+      set((state) => ({
+        likedTracks: isLiked
+          ? [...state.likedTracks, trackId]
+          : state.likedTracks.filter((id) => id !== trackId),
+      }));
+    }
+  },
+  setLikedTracks: (likedTracks) => set({ likedTracks }),
 }));

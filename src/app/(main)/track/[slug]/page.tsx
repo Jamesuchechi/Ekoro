@@ -88,6 +88,11 @@ export default async function TrackPage({ params }: PageProps) {
     },
   });
 
+  // 3. Fetch likes count for the track
+  const likesCount = await prisma.like.count({
+    where: { trackId: track.id },
+  });
+
   // Convert BigInt values to string representation for serialization
   const serializedTrack = {
     ...track,
@@ -105,6 +110,7 @@ export default async function TrackPage({ params }: PageProps) {
     <TrackDetailsClient
       track={serializedTrack}
       relatedTracks={serializedRelatedTracks}
+      initialLikesCount={likesCount}
     />
   );
 }

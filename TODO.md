@@ -259,11 +259,11 @@
 
 ### 2.5 Likes
 
-- [ ] 🔴 Like track action (inserts into public.likes table with RLS)
-- [ ] 🔴 Unlike track action (deletes from public.likes table with RLS)
-- [ ] 🔴 Query user liked tracks list from database
-- [ ] 🔴 Frontend: like button on track row and track detail page
-- [ ] 🟡 Display liked count on tracks (aggregating likes count)
+- [x] 🔴 Like track action (inserts into public.likes table with RLS)
+- [x] 🔴 Unlike track action (deletes from public.likes table with RLS)
+- [x] 🔴 Query user liked tracks list from database
+- [x] 🔴 Frontend: like button on track row and track detail page
+- [x] 🟡 Display liked count on tracks (aggregating likes count)
 
 ### 2.6 Albums
 
