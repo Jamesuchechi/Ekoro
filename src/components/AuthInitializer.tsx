@@ -18,26 +18,30 @@ export default function AuthInitializer({ children }: { children: React.ReactNod
         const {
           data: { session },
         } = await supabase.auth.getSession();
-        
+
         if (session?.user) {
           setUser(session.user);
-          // Fetch public user profile
-          const res = await fetch(`/api/users/${session.user.id}`);
-          if (res.ok) {
-            const data = await res.json();
-            if (data.success) {
-              setProfile(data.data);
+          try {
+            const res = await fetch(`/api/users/${session.user.id}`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data.success) setProfile(data.data);
             }
+          } catch {
+            // profile fetch failing shouldn't break auth
           }
-          // Fetch liked track IDs
-          const likedIds = await getUserLikedTrackIds();
-          setLikedTracks(likedIds);
+          try {
+            const likedIds = await getUserLikedTrackIds();
+            setLikedTracks(likedIds);
+          } catch {
+            setLikedTracks([]);
+          }
         } else {
           clearAuth();
           setLikedTracks([]);
         }
       } catch (err) {
-        console.error("Failed to initialize authentication:", err);
+        console.error("Auth init failed:", err);
         clearAuth();
         setLikedTracks([]);
       } finally {
@@ -47,7 +51,6 @@ export default function AuthInitializer({ children }: { children: React.ReactNod
 
     initializeAuth();
 
-    // Listen for real-time authentication events (login, logout, token refresh)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -57,14 +60,16 @@ export default function AuthInitializer({ children }: { children: React.ReactNod
           const res = await fetch(`/api/users/${session.user.id}`);
           if (res.ok) {
             const data = await res.json();
-            if (data.success) {
-              setProfile(data.data);
-            }
+            if (data.success) setProfile(data.data);
           }
+        } catch {
+          // non-fatal
+        }
+        try {
           const likedIds = await getUserLikedTrackIds();
           setLikedTracks(likedIds);
-        } catch (err) {
-          console.error("Failed to refresh user profile:", err);
+        } catch {
+          setLikedTracks([]);
         }
       } else {
         clearAuth();
@@ -73,10 +78,8 @@ export default function AuthInitializer({ children }: { children: React.ReactNod
       setLoading(false);
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [supabase, setUser, setProfile, setLoading, clearAuth, setLikedTracks]);
+    return () => subscription.unsubscribe();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return <>{children}</>;
 }

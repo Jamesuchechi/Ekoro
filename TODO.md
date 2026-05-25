@@ -283,70 +283,13 @@
 
 ---
 
-## Phase 3 — Monetization: Subscriptions, Purchases, Tips
 
-> Goal: Ekoro makes money. Artists make money. Stripe is fully integrated.
-> **Target timeline: 3–4 weeks after Phase 2**
-
-### 3.1 Stripe Setup
-
-- [ ] 🔴 Create Stripe account and configure products/prices for Pro and Artist Pro plans
-- [ ] 🔴 Set up Stripe Connect for artist payouts (marketplace model)
-- [ ] 🔴 Configure Stripe webhooks endpoint: `POST /api/webhooks/stripe`
-- [ ] 🔴 Handle webhook events inside route handler:
-  - [ ] `invoice.paid` → activate/renew subscription (updates public.users plan status)
-  - [ ] `customer.subscription.deleted` → downgrade user to free
-  - [ ] `payment_intent.succeeded` → fulfill purchase or tip
-  - [ ] `account.updated` (Stripe Connect) → update artist payout status
-
-### 3.2 Subscription API
-
-- [ ] 🔴 `POST /api/payments/subscribe` — create Stripe subscription, return checkout URL
-- [ ] 🔴 Query user subscription status from database
-- [ ] 🔴 `DELETE /api/payments/subscribe` or Server Action — cancel subscription (at period end)
-- [ ] 🔴 `POST /api/payments/portal` — Stripe billing portal redirect URL (manage card, invoices)
-- [ ] 🔴 Enforce plan limits in download and streaming routes/actions (using Supabase role metadata)
-
-### 3.3 Track Purchases
-
-- [ ] 🔴 `POST /api/payments/purchase` — buy a paid-download track (Stripe Payment Intent)
-- [ ] 🔴 Query user purchased tracks list from database
-- [ ] 🔴 Download endpoint checks `purchases` table for paid tracks before generating signed URLs
-- [ ] 🟡 Email receipt after successful purchase (integrate Postmark/SendGrid)
-
-### 3.4 Artist Tips
-
-- [ ] 🔴 `POST /api/payments/tip` — send tip to artist
-- [ ] 🔴 Stripe Connect transfer: 95% to artist, 5% platform fee
-- [ ] 🔴 Query user tip history (tips sent)
-- [ ] 🔴 Query artist's received tips history
-- [ ] 🟡 Frontend: tip modal on track detail and artist profile pages
-
-### 3.5 Frontend — Pricing & Upgrade
-
-- [ ] 🔴 `/pricing` page with plan comparison table
-- [ ] 🔴 "Go Premium" CTA in player bar and sidebar
-- [ ] 🔴 Checkout flow (Stripe-hosted or embedded)
-- [ ] 🔴 Post-payment success page
-- [ ] 🟡 `/billing` page: current plan, next renewal date, cancel button, Stripe portal link
-- [ ] 🟡 Upgrade prompt when free user tries to download a premium track
-- [ ] 🟢 "Support this artist" tip button with preset amounts ($2, $5, $10, custom)
-
-### 3.6 Artist Payouts
-
-- [ ] 🟡 Artist Stripe Connect onboarding flow in dashboard
-- [ ] 🟡 Query artist earnings breakdown (streams, downloads, tips) from database
-- [ ] 🟡 Frontend: earnings summary card in artist dashboard
-- [ ] 🟢 Monthly earnings statement (PDF via email)
-
----
-
-## Phase 4 — Social Layer: Comments, Notifications, Reposts
+## Phase 3 — Social Layer: Comments, Notifications, Reposts
 
 > Goal: Platform feels alive. Users interact with content and each other.
 > **Target timeline: 3 weeks after Phase 3**
 
-### 4.1 Comments
+### 3.1 Comments
 
 - [ ] 🔴 `POST /api/tracks/:id/comments` or Server Action — post a comment (optionally at a timestamp)
 - [ ] 🔴 Query paginated comment list for a track from database
@@ -355,7 +298,7 @@
 - [ ] 🟡 Comment likes (with RLS policies)
 - [ ] 🟢 Nested replies on comments
 
-### 4.2 Notifications
+### 3.2 Notifications
 
 - [ ] 🔴 Create notifications DB table: user_id, type, actor_id, entity_id, entity_type, read, created_at
 - [ ] 🔴 Database triggers or Server Actions to create notifications on follows, likes, comments, tips, or processing status updates
@@ -366,7 +309,7 @@
 - [ ] 🟡 Email digest for notifications (daily or weekly, opt-in)
 - [ ] 🟢 Push notifications for PWA
 
-### 4.3 Reposts / Shares
+### 3.3 Reposts / Shares
 
 - [ ] 🟡 Server Action / SDK call to repost a track (inserts link record in database)
 - [ ] 🟡 Server Action / SDK call to undo repost
@@ -374,7 +317,7 @@
 - [ ] 🟡 Frontend: repost button on track actions menu
 - [ ] 🟢 Share to social media (Twitter/X, WhatsApp) with OG meta tags
 
-### 4.4 OG Meta Tags (Social Sharing)
+### 3.4 OG Meta Tags (Social Sharing)
 
 - [ ] 🔴 Track pages: `og:title`, `og:image` (cover art), `og:description`, `og:audio`
 - [ ] 🔴 Artist pages: `og:title`, `og:image` (avatar), `og:description`
@@ -382,12 +325,12 @@
 
 ---
 
-## Phase 5 — Polish, Analytics & Scale
+## Phase 4 — Polish, Analytics & Scale
 
 > Goal: Production-ready. Performant. Artist tools are complete. Platform is trustworthy.
 > **Target timeline: Ongoing / 4–6 weeks after Phase 4**
 
-### 5.1 Artist Analytics Dashboard
+### 4.1 Artist Analytics Dashboard
 
 - [ ] 🔴 Query plays and downloads over time (7d, 30d, 90d, all time) from database
 - [ ] 🔴 Query follower growth metrics over time
@@ -401,7 +344,7 @@
 - [ ] 🟡 Country/region breakdown of listeners
 - [ ] 🟢 Analytics export as CSV
 
-### 5.2 Admin Panel
+### 4.2 Admin Panel
 
 - [ ] 🔴 `/admin` route group, admin-only access
 - [ ] 🔴 User management: list, search, ban/unban users
@@ -411,7 +354,7 @@
 - [ ] 🟡 Featured track curation (override trending with editor picks)
 - [ ] 🟢 Content report queue (user-flagged tracks)
 
-### 5.3 Copyright & Content Safety
+### 4.3 Copyright & Content Safety
 
 - [ ] 🟡 Integrate AudD API for audio fingerprinting on upload
 - [ ] 🟡 Block upload if fingerprint matches a copyrighted track
@@ -419,7 +362,7 @@
 - [ ] 🟡 Terms of service agreement checkbox on upload form
 - [ ] 🟢 Artist identity verification (optional)
 
-### 5.4 Performance Optimizations
+### 4.4 Performance Optimizations
 
 - [ ] 🔴 Implement caching (cache-control headers, Next.js page revalidation) for: trending list, artist profiles, track metadata
 - [ ] 🔴 Add database indexes on key foreign keys and filter columns to speed up querying
@@ -429,14 +372,14 @@
 - [ ] 🟡 Prefetch HLS playlist for next track in queue (reduces gap between tracks)
 - [ ] 🟢 Lighthouse score target: 90+ on all pages
 
-### 5.5 Progressive Web App (PWA)
+### 4.5 Progressive Web App (PWA)
 
 - [ ] 🟡 Add `manifest.json` with app icons and theme color
 - [ ] 🟡 Service worker for offline page caching
 - [ ] 🟡 Cache recently played tracks for offline playback
 - [ ] 🟢 "Install app" banner on mobile
 
-### 5.6 Mobile App (v2 — React Native)
+### 4.6 Mobile App (v2 — React Native)
 
 - [ ] 🟢 Set up React Native + Expo project
 - [ ] 🟢 Share authentication with web (using Supabase Auth Client SDK)
@@ -445,7 +388,7 @@
 - [ ] 🟢 iOS App Store submission
 - [ ] 🟢 Google Play Store submission
 
-### 5.7 Accessibility (a11y)
+### 4.7 Accessibility (a11y)
 
 - [ ] 🟡 Audit all pages with axe DevTools
 - [ ] 🟡 Full keyboard navigation support
@@ -453,13 +396,13 @@
 - [ ] 🟡 Screen reader-friendly player controls
 - [ ] 🟢 High contrast mode support
 
-### 5.8 Internationalization (i18n)
+### 4.8 Internationalization (i18n)
 
 - [ ] 🟢 Set up `next-intl`
 - [ ] 🟢 English (default), French, Portuguese (initial languages)
 - [ ] 🟢 Currency localization for pricing (USD, EUR, GBP, NGN)
 
-### 5.9 Monitoring & Observability
+### 4.9 Monitoring & Observability
 
 - [ ] 🔴 Set up Sentry for Next.js server-side error tracking
 - [ ] 🔴 Set up Sentry for frontend error tracking
@@ -469,7 +412,7 @@
 - [ ] 🟢 Structured logs for Server Actions and Route Handlers
 - [ ] 🟢 Alerting on: high error rates, transcoding backlog, DB slow queries
 
-### 5.10 Security Hardening
+### 4.10 Security Hardening
 
 - [ ] 🔴 Full security headers audit (Content-Security-Policy, HSTS, etc. configured in Next.js config)
 - [ ] 🔴 Security audit of Supabase Row Level Security (RLS) policies
@@ -503,9 +446,9 @@
 | Phase 0 — Setup        | 24      | 17    | 71%      |
 | Phase 1 — MVP          | 67      | 13    | 19%      |
 | Phase 2 — Discovery    | 41      | 0     | 0%       |
-| Phase 3 — Monetization | 32      | 0     | 0%       |
-| Phase 4 — Social       | 22      | 0     | 0%       |
-| Phase 5 — Polish       | 48      | 0     | 0%       |
+| Phase 3 — social       | 32      | 0     | 0%       |
+| Phase 4 — polish       | 22      | 0     | 0%       |
+| Phase 5 — scale        | 48      | 0     | 0%       |
 | **Total**              | **234** | **30**| **13%**  |
 
 ---
